@@ -1,5 +1,5 @@
 {
-  "name": "ls",
+  "name": "skeleton-tool",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/wkimak/skeleton-tool/issues"
   },
-  "homepage": "https://github.com/wkimak/skeleton-tool#readme"
+  "homepage": "https://github.com/wkimak/skeleton-tool#readme",
+  "bin": {
+    "buildspec": "./index.js"
+  },
+  "dependencies": {
+    "typescript": "^3.8.3"
+  }
 }
