@@ -11,39 +11,48 @@ const node = ts.createSourceFile(
     ts.ScriptTarget.Latest // langugeVersion
 );
 
-function getDescribe(fileName, ) {
-  return `describe((${fileName}) => {}) \n`
+function isComponentClass(node) {
+    if (node.decorators) {
+        for (const dec of node.decorators) {
+            if (dec.expression.expression.escapedText === 'Component') {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
-let output = '';
-function scanFile(node, result, index) {
+function getConfiguration() {
+    return `
+    beforeEach(async(() => {
+        TestBed.configureTestingModule({
+          declarations: [],
+        }).compileComponents();
+      }));
+    `
+}
+
+function scanFile(node, output) {
     node.forEach((child) => {
-        if (ts.SyntaxKind[child.kind] === 'ClassDeclaration') {
-            result.push({ name: child.name.escapedText, children: []});
-            output += getDescribe(child.name.escapedText);
-            if  (child.members) {
-              scanFile(child.members, result[index].children, index++);
-            }
-        } else if (ts.SyntaxKind[child.kind] === 'FunctionDeclaration' || ts.SyntaxKind[child.kind] === 'MethodDeclaration' ) {
-            result.push({ name: child.name.escapedText, children: []});
-            output += getDescribe(child.name.escapedText);
-             if (child.body.statements) {
-                 scanFile(child.body.statements, result[index].children, index++);
-             };
+        if (ts.SyntaxKind[child.kind] === 'ClassDeclaration' ||
+            ts.SyntaxKind[child.kind] === 'FunctionDeclaration' ||
+            ts.SyntaxKind[child.kind] === 'MethodDeclaration') {
+            output += `describe(${JSON.stringify(child.name.escapedText)}, () => {
+                ${isComponentClass(child) ? getConfiguration() : ''}
+                ${child.members ? scanFile(child.members, '') : scanFile(child.body && child.body.statements ? child.body.statements : [], '')}
+            });`
         }
     });
 
-    return result;
+    return output;
 }
 
-scanFile(node.statements, [], 0);
-console.log('OUTPUT', output);
 
-// fs.writeFile(`${fileName.split('.')[0]}.test.ts`, JSON.stringify(scanFile(node.statements, [], 0)), (err) => {
-//     console.error('ERROR', err);
-// });
-
- //console.log(scanFile(node.statements, [], 0));
+const prefix = fileName.split('.').slice(0, -1).join('.');
+fs.writeFile(`${prefix}.spec.ts`, scanFile(node.statements, ''), (err) => {
+    console.error('ERROR', err);
+});
 
 
 
