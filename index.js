@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const ts = require('typescript');
+const prettier = require('prettier');
 const fileName = process.argv[2];
 const cwd = process.cwd;
 
@@ -19,9 +20,12 @@ function isComponentClass(node) {
             }
         }
     }
-
     return false;
 }
+
+const imports = [
+    `import { TestBed, async } from '@angular/core/testing';`,
+]
 
 function getConfiguration() {
     return `
@@ -48,9 +52,8 @@ function scanFile(node, output) {
     return output;
 }
 
-
 const prefix = fileName.split('.').slice(0, -1).join('.');
-fs.writeFile(`${prefix}.spec.ts`, scanFile(node.statements, ''), (err) => {
+fs.writeFile(`${prefix}.spec.ts`, prettier.format(scanFile(node.statements, imports.join(''))), (err) => {
     console.error('ERROR', err);
 });
 
