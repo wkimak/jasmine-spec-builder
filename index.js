@@ -2,9 +2,28 @@
 const fs = require('fs');
 const ts = require('typescript');
 const prettier = require('prettier');
+const { overWriteFile } = require('./overWriteFile');
 const fileName = process.argv[2];
 const cwd = process.cwd;
 
+// Index.js:
+// 1.) taking in command from terminal
+// 2.) get source file
+// 3.) logic for choosing which actions to take
+       // overwrite or not overwrite
+// 4.) write file
+
+// Templates.js
+  // stores all basic text (imports, config, describes)
+
+// OverwriteFile.js
+  // functions to overwrite file 
+
+// AppendToFile.js
+  // function to append to file
+
+// Helper.js
+  // functions that are shared between OverwriteFile and AppendToFile
 
 const node = ts.createSourceFile(
     fileName,   // fileName
@@ -12,48 +31,10 @@ const node = ts.createSourceFile(
     ts.ScriptTarget.Latest // langugeVersion
 );
 
-function isComponentClass(node) {
-    if (node.decorators) {
-        for (const dec of node.decorators) {
-            if (dec.expression.expression.escapedText === 'Component') {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-const imports = [
-    `import { TestBed, async } from '@angular/core/testing';`,
-]
-
-function getConfiguration() {
-    return `
-    beforeEach(async(() => {
-        TestBed.configureTestingModule({
-          declarations: [],
-        }).compileComponents();
-      }));
-    `
-}
-
-function scanFile(node, output) {
-    node.forEach((child) => {
-        if (ts.SyntaxKind[child.kind] === 'ClassDeclaration' ||
-            ts.SyntaxKind[child.kind] === 'FunctionDeclaration' ||
-            ts.SyntaxKind[child.kind] === 'MethodDeclaration') {
-            output += `describe(${JSON.stringify(child.name.escapedText)}, () => {
-                ${isComponentClass(child) ? getConfiguration() : ''}
-                ${child.members ? scanFile(child.members, '') : scanFile(child.body && child.body.statements ? child.body.statements : [], '')}
-            });`
-        }
-    });
-
-    return output;
-}
+const overwrite = overWriteFile(node.statements);
 
 const prefix = fileName.split('.').slice(0, -1).join('.');
-fs.writeFile(`${prefix}.spec.ts`, prettier.format(scanFile(node.statements, imports.join(''))), (err) => {
+fs.writeFile(`${prefix}.spec.ts`, prettier.format(overwrite), (err) => {
     console.error('ERROR', err);
 });
 
