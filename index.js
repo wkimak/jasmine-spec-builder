@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 const fs = require('fs');
-const ts = require('typescript');
 const prettier = require('prettier');
+const ts = require('typescript');
 const argv = require('yargs');
-const { overWriteFile } = require('./overWriteFile');
-const { appendToFile } = require('./appendToFile');
+const { createSpecFile } = require('./buildSpecFile');
 
 const terminal = argv.usage('Usage: $0 <command> [options]')
   .command('build', 'Build test file')
@@ -16,30 +15,35 @@ const terminal = argv.usage('Usage: $0 <command> [options]')
     describe: 'Load a File',
     type: 'string'
   })
-  .option('a', {
-    alias: 'append',
-    demandOption: false,
-    default: false,
-    describe: 'Append to spec file',
-    type: 'boolean'
-  })
   .help('h')
   .alias('h', 'help').argv;
 
-const node = ts.createSourceFile(
-  terminal.file,   // fileName
-  fs.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), // sourceText
-  ts.ScriptTarget.Latest // langugeVersion
-);
-
-const prefix = terminal.file.split('.').slice(0, -1).join('.');
-if (!terminal.append) {
-  fs.writeFile(`${prefix}.spec.ts`, prettier.format(overWriteFile(node.statements), { parser: 'babel' }), (err) => {
+function writeFile(fileName, data) {
+  fs.writeFile(fileName, prettier.format(data, { parser: 'babel' }), (err) => {
     console.error('ERROR', err);
   });
-} else {
-  appendToFile();
 }
+
+const specFileName = terminal.file.split('.').slice(0, -1).join('.') + '.spec.ts';
+const specPath = `${process.cwd()}/${specFileName}`;
+
+if (!fs.existsSync(specPath)) {
+  const componentFile = ts.createSourceFile(
+    terminal.file,
+    fs.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'),
+    ts.ScriptTarget.Latest
+  );
+  const sourceFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);
+  const created = createSpecFile(componentFile, sourceFile);
+  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+  writeFile(specFileName, printer.printFile(created));
+}
+
+
+
+
+
+
 
 
 
