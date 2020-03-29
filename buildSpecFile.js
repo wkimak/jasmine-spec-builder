@@ -1,7 +1,8 @@
 const ts = require('typescript');
-const { getDescribe } = require('./templates');
+const { getDescribe, getImport, getConfiguration } = require('./templates');
 
 function createSpecFile(parentNode, sourceFile) {
+  sourceFile.statements = [getImport(['TestBed', 'async'], '@angular/core/testing')];
   return createDescribes(parentNode, sourceFile);
 }
 
@@ -12,9 +13,10 @@ function createDescribes(parentNode, sourceFile) {
     }
 
     if (ts.isClassDeclaration(childNode)) {
-     sourceFile.statements[sourceFile.statements.length - 1].parameters[1].body.statements = ts.createNodeArray([]);
-     createSpecFile(childNode, sourceFile.statements[sourceFile.statements.length - 1].parameters[1].body);
-    } 
+      const body = sourceFile.statements[sourceFile.statements.length - 1].parameters[1].body;
+      body.statements = ts.createNodeArray([getConfiguration()]);
+      createDescribes(childNode, body);
+    }
   });
   return sourceFile;
 }

@@ -1,6 +1,6 @@
 const ts = require('typescript');
 
-function getArrowFn() {
+function createArrowFn(statements = []) {
     return ts.createArrowFunction(
         undefined,
         undefined,
@@ -9,31 +9,36 @@ function getArrowFn() {
         ],
         undefined,
         ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-        ts.createBlock({}, true)
+        ts.createBlock(statements, true)
     );
 }
 
 function getDescribe(name) {
-    return ts.createMethodSignature(undefined, [ts.createStringLiteral(name), getArrowFn()], undefined, 'describe', undefined);
+    return ts.createMethodSignature(undefined, [ts.createStringLiteral(name), createArrowFn()], undefined, 'describe', undefined);
 }
 
-
-const imports = [
-    `import { TestBed, async } from '@angular/core/testing';`,
-];
+function getImport(importNames, path) {
+    const properties = [];
+    importNames.forEach(name => properties.push(ts.createIdentifier(name)));
+    return ts.createImportDeclaration(undefined, undefined, ts.createImportClause(
+        ts.createObjectLiteral(properties)), ts.createLiteral(path));
+}
 
 function getConfiguration() {
-    return `
-    beforeEach(async(() => {
-        TestBed.configureTestingModule({
-          declarations: [],
-        }).compileComponents();
-      }));
-    `
+    const beforeEach = ts.createIdentifier("beforeEach"),
+        async = ts.createIdentifier('async'),
+        testBed = ts.createIdentifier('TestBed'),
+        configureTestingModule = ts.createIdentifier('configureTestingModule'),
+        declarations = ts.createIdentifier('declarations'),
+        compileComponents = ts.createIdentifier('compileComponents');
+
+    const statements = [ts.createPropertyAccess(testBed, ts.createPropertyAccess(ts.createCall(configureTestingModule, undefined, [ts.createObjectLiteral(
+        [ts.createPropertyAssignment(declarations, ts.createArrayLiteral())], true
+    )]), ts.createCall(compileComponents)))];
+
+    return ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [createArrowFn(statements)])]);
 }
 
 exports.getDescribe = getDescribe;
-exports.imports = imports;
+exports.getImport = getImport;
 exports.getConfiguration = getConfiguration;
-
-
