@@ -24,20 +24,33 @@ function getImport(importNames, path) {
         ts.createObjectLiteral(properties)), ts.createLiteral(path));
 }
 
-function getConfiguration() {
+function getConfiguration(stubs) {
     const beforeEach = ts.createIdentifier("beforeEach"),
         async = ts.createIdentifier('async'),
         testBed = ts.createIdentifier('TestBed'),
         configureTestingModule = ts.createIdentifier('configureTestingModule'),
         declarations = ts.createIdentifier('declarations'),
+        providers = ts.createIdentifier('providers'),
         compileComponents = ts.createIdentifier('compileComponents');
 
+        const test = stubs.map(stub => {
+          return ts.createObjectLiteral([ts.createPropertyAssignment(ts.createIdentifier('provide'), ts.createIdentifier(stub.name)), 
+          ts.createPropertyAssignment(ts.createIdentifier('useClass'), ts.createIdentifier(stub.stubName))])
+        });
+
+        console.log('TEST', test);
+
+    
+
     const statements = [ts.createPropertyAccess(testBed, ts.createPropertyAccess(ts.createCall(configureTestingModule, undefined, [ts.createObjectLiteral(
-        [ts.createPropertyAssignment(declarations, ts.createArrayLiteral())], true
+        [ts.createPropertyAssignment(declarations, ts.createArrayLiteral()), ts.createPropertyAssignment(providers, ts.createArrayLiteral(
+        test
+        ))], true
     )]), ts.createCall(compileComponents)))];
 
     return ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [createArrowFn(statements)])]);
 }
+
 
 exports.getDescribe = getDescribe;
 exports.getImport = getImport;
