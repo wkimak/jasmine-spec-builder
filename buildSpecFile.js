@@ -1,21 +1,12 @@
 const ts = require('typescript');
+const fs = require('fs');
+const path = require('path')
 const { getDescribe, getImport, getConfiguration } = require('./templates');
 
 function createSpecFile(parentNode, sourceFile) {
   sourceFile.statements = [getImport(['TestBed', 'async'], '@angular/core/testing')];
   return createDescribes(parentNode, sourceFile);
 }
-
-// stub rules:
-  // name must be name of service + 'Stub.ts'
-  // file can be located anywhere, will search all files
-
-
-// Implementation:
-  // 1.) add stub to providers
-  // 2.) find stub file
-  // 3.) create import for stub file
-
 
 function createDescribes(parentNode, sourceFile) {
   ts.forEachChild(parentNode, childNode => {
@@ -24,29 +15,68 @@ function createDescribes(parentNode, sourceFile) {
     }
 
     if (ts.isClassDeclaration(childNode)) {
+      const className = childNode.name.escapedText;
       const body = sourceFile.statements[sourceFile.statements.length - 1].parameters[1].body;
-      const stubs = createStubs(childNode);
-      body.statements = ts.createNodeArray([getConfiguration(stubs)]);
+      const stubs = createStubs(childNode, sourceFile);
+      body.statements = ts.createNodeArray([getConfiguration(stubs, className)]);
+      sourceFile.statements = [getImport([className], `./${parentNode.fileName.slice(0, -3)}`), ...sourceFile.statements];
       createDescribes(childNode, body);
     }
   });
   return sourceFile;
 }
 
-function createStubs(classNode) {
+function findPath(stubName, currentPath) {
+  const excludedDirectories = {
+    node_modules: true,
+    dist: true,
+    '.git': true
+  };
+  let fileFound = false;
+
+  function inner(currentPath) {
+    if (!fileFound) {
+      const files = fs.readdirSync(currentPath);
+
+      for (const file in files) {
+        var currentFile = currentPath + '/' + files[file];
+        var stats = fs.statSync(currentFile);
+        if (stats.isFile() && path.basename(currentFile) === stubName + '.ts') {
+          fileFound = currentFile.slice(0, -3);
+        }
+        else if (stats.isDirectory() && !excludedDirectories.hasOwnProperty(path.basename(currentPath))) {
+          inner(currentFile);
+        }
+      }
+    }
+  }
+
+  inner(currentPath);
+  return fileFound;
+}
+
+function createStubImport(stubName, sourceFile) {
+  const specPath = process.cwd();
+  const stubPath = findPath(stubName, path.dirname(specPath));
+  const relativePath = path.relative(specPath, stubPath);
+  sourceFile.statements = [getImport([stubName], relativePath), ...sourceFile.statements];
+}
+
+function createStubs(classNode, sourceFile) {
   const stubs = [];
-  ts.forEachChild(classNode, childNode => {
+  for (const childNode of classNode.members) {
     if (ts.isConstructorDeclaration(childNode)) {
       childNode.parameters.forEach(param => {
-        stubs.push({ name: param.type.typeName.escapedText, stubName: param.type.typeName.escapedText + 'Stub'});
+        const stubName = param.type.typeName.escapedText + 'Stub';
+        stubs.push({ provider: param.type.typeName.escapedText, class: stubName });
+        createStubImport(stubName, sourceFile);
       });
+      return stubs;
     }
-  });
+  };
 
   return stubs;
 }
-
-
 
 
 exports.createSpecFile = createSpecFile;

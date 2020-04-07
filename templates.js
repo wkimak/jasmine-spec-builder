@@ -24,29 +24,35 @@ function getImport(importNames, path) {
         ts.createObjectLiteral(properties)), ts.createLiteral(path));
 }
 
-function getConfiguration(stubs) {
+function getConfiguration(stubs, name) {
     const beforeEach = ts.createIdentifier("beforeEach"),
         async = ts.createIdentifier('async'),
         testBed = ts.createIdentifier('TestBed'),
         configureTestingModule = ts.createIdentifier('configureTestingModule'),
         declarations = ts.createIdentifier('declarations'),
         providers = ts.createIdentifier('providers'),
-        compileComponents = ts.createIdentifier('compileComponents');
+        provide = ts.createIdentifier('provide'),
+        useClass = ts.createIdentifier('useClass'),
+        compileComponents = ts.createIdentifier('compileComponents'),
+        className = ts.createIdentifier(name);
 
-        const test = stubs.map(stub => {
-          return ts.createObjectLiteral([ts.createPropertyAssignment(ts.createIdentifier('provide'), ts.createIdentifier(stub.name)), 
-          ts.createPropertyAssignment(ts.createIdentifier('useClass'), ts.createIdentifier(stub.stubName))])
-        });
 
-        console.log('TEST', test);
+    const declarationsProp = ts.createPropertyAssignment(declarations, ts.createArrayLiteral([className]));
 
-    
+    const providersArray = stubs.map(stub => {
+        return ts.createObjectLiteral([ts.createPropertyAssignment(provide, ts.createIdentifier(stub.provider)),
+        ts.createPropertyAssignment(useClass, ts.createIdentifier(stub.class))])
+    });
 
-    const statements = [ts.createPropertyAccess(testBed, ts.createPropertyAccess(ts.createCall(configureTestingModule, undefined, [ts.createObjectLiteral(
-        [ts.createPropertyAssignment(declarations, ts.createArrayLiteral()), ts.createPropertyAssignment(providers, ts.createArrayLiteral(
-        test
-        ))], true
-    )]), ts.createCall(compileComponents)))];
+    const providersProp = ts.createPropertyAssignment(providers, ts.createArrayLiteral(
+        providersArray
+    ));
+
+    const configure = ts.createCall(configureTestingModule, undefined, [ts.createObjectLiteral(
+        [declarationsProp, providersProp], true
+    )])
+
+    const statements = [ts.createPropertyAccess(testBed, ts.createPropertyAccess(configure, ts.createCall(compileComponents)))];
 
     return ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [createArrowFn(statements)])]);
 }
