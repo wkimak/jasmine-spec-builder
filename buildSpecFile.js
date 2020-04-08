@@ -3,13 +3,16 @@ const fs = require('fs');
 const path = require('path')
 const { getDescribe, getImport, getConfiguration } = require('./templates');
 
-function createSpecFile(parentNode, sourceFile) {
-  sourceFile.statements = [getImport(['TestBed', 'async'], '@angular/core/testing')];
-  return createDescribes(parentNode, sourceFile);
+function prependImport(sourceFile, names, path) {
+  sourceFile.statements = [getImport(names, path), ...sourceFile.statements];
 }
 
-function createDescribes(parentNode, sourceFile) {
-  ts.forEachChild(parentNode, childNode => {
+function removePathExtension(path) {
+  return path.slice(0, -3);
+}
+
+function createSpecFile(componentFile, sourceFile) {
+  ts.forEachChild(componentFile, childNode => {
     if (ts.isClassDeclaration(childNode) || ts.isFunctionDeclaration(childNode) || ts.isMethodDeclaration(childNode)) {
       sourceFile.statements = [...sourceFile.statements, getDescribe(childNode.name.escapedText)];
     }
@@ -17,16 +20,17 @@ function createDescribes(parentNode, sourceFile) {
     if (ts.isClassDeclaration(childNode)) {
       const className = childNode.name.escapedText;
       const body = sourceFile.statements[sourceFile.statements.length - 1].parameters[1].body;
-      const stubs = createStubs(childNode, sourceFile);
+      const stubs = createStubs(componentFile, childNode, sourceFile);
       body.statements = ts.createNodeArray([getConfiguration(stubs, className)]);
-      sourceFile.statements = [getImport([className], `./${parentNode.fileName.slice(0, -3)}`), ...sourceFile.statements];
-      createDescribes(childNode, body);
+      prependImport(sourceFile, ['TestBed', 'async'], '@angular/core/testing');
+      prependImport(sourceFile, [className], `./${removePathExtension(componentFile.fileName)}`);
+      createSpecFile(childNode, body);
     }
   });
   return sourceFile;
 }
 
-function findPath(stubName, currentPath) {
+function findStubPath(stubName, currentPath) {
   const excludedDirectories = {
     node_modules: true,
     dist: true,
@@ -42,7 +46,7 @@ function findPath(stubName, currentPath) {
         var currentFile = currentPath + '/' + files[file];
         var stats = fs.statSync(currentFile);
         if (stats.isFile() && path.basename(currentFile) === stubName + '.ts') {
-          fileFound = currentFile.slice(0, -3);
+          fileFound = removePathExtension(currentFile);
         }
         else if (stats.isDirectory() && !excludedDirectories.hasOwnProperty(path.basename(currentPath))) {
           inner(currentFile);
@@ -55,21 +59,37 @@ function findPath(stubName, currentPath) {
   return fileFound;
 }
 
-function createStubImport(stubName, sourceFile) {
-  const specPath = process.cwd();
-  const stubPath = findPath(stubName, path.dirname(specPath));
-  const relativePath = path.relative(specPath, stubPath);
-  sourceFile.statements = [getImport([stubName], relativePath), ...sourceFile.statements];
+function findImportForDI(sourceFile, componentFile, provider) {
+  for (const childNode of componentFile.statements) {
+    if (ts.isImportDeclaration(childNode)) {
+      const imports = childNode.importClause.namedBindings.elements;
+      const path = childNode.moduleSpecifier.text;
+      imports.forEach(node => {
+        if (node.name.escapedText === provider) {
+          prependImport(sourceFile, [provider], path);
+        }
+      });
+    }
+  }
 }
 
-function createStubs(classNode, sourceFile) {
+function createRelativeStubPath(stubName, sourceFile) {
+  const specPath = process.cwd();
+  const stubPath = findStubPath(stubName, path.dirname(specPath));
+  const relativePath = path.relative(specPath, stubPath);
+  prependImport(sourceFile, [stubName], relativePath);
+}
+
+function createStubs(componentFile, classNode, sourceFile) {
   const stubs = [];
   for (const childNode of classNode.members) {
     if (ts.isConstructorDeclaration(childNode)) {
       childNode.parameters.forEach(param => {
-        const stubName = param.type.typeName.escapedText + 'Stub';
-        stubs.push({ provider: param.type.typeName.escapedText, class: stubName });
-        createStubImport(stubName, sourceFile);
+        const provider = param.type.typeName.escapedText;
+        const stubName = provider + 'Stub';
+        stubs.push({ provider, class: stubName });
+        createRelativeStubPath(stubName, sourceFile);
+        findImportForDI(sourceFile, componentFile, provider);
       });
       return stubs;
     }
