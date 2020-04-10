@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "lib": [
+            "es2017",
+            "es2015",
+            "dom",
+            "es6"
+        ],
+        "module": "None",
+        "moduleResolution": "node",
+        "outDir": "./dist",
+        "sourceMap": false,
+        "strict": false,
+        "esModuleInterop": true
+    },
+    "include": [
+        "./src/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+    ]
+}
