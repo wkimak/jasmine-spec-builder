@@ -13,7 +13,7 @@ function prependImport(sourceFile, names, path) {
 function removePathExtension(path) {
     return path.slice(0, -3);
 }
-function createSpecFile(componentFile, specFile) {
+function createSpecFile(componentFile, specFile, useMasterServiceStub) {
     typescript_1.default.forEachChild(componentFile, childNode => {
         if (typescript_1.default.isClassDeclaration(childNode) || typescript_1.default.isFunctionDeclaration(childNode) || typescript_1.default.isMethodDeclaration(childNode)) {
             const node = childNode;
@@ -22,23 +22,23 @@ function createSpecFile(componentFile, specFile) {
         if (typescript_1.default.isClassDeclaration(childNode)) {
             const className = childNode.name.text;
             const body = specFile.statements[specFile.statements.length - 1].expression.arguments[1].body;
-            const stubs = createStubs(componentFile, childNode, specFile);
-            body.statements = typescript_1.default.createNodeArray([templates_1.getConfiguration(stubs, className)]);
+            const stubs = createStubs(componentFile, childNode, specFile, useMasterServiceStub);
+            body.statements = typescript_1.default.createNodeArray([templates_1.getMasterServiceInit(), templates_1.getConfiguration(stubs, className, useMasterServiceStub)]);
             prependImport(specFile, ['TestBed', 'async'], '@angular/core/testing');
             prependImport(specFile, [className], `./${removePathExtension(componentFile.fileName)}`);
-            createSpecFile(childNode, body);
+            createSpecFile(childNode, body, useMasterServiceStub);
         }
     });
     return specFile;
 }
-function createStubs(componentFile, classNode, specFile) {
+function createStubs(componentFile, classNode, specFile, useMasterServiceStub) {
     const stubs = [];
     for (const childNode of classNode.members) {
         if (typescript_1.default.isConstructorDeclaration(childNode)) {
             childNode.parameters.forEach((param) => {
                 const provider = param.type.typeName.text;
-                const stubName = provider + 'Stub';
-                stubs.push({ provider, class: stubName });
+                const stubName = useMasterServiceStub ? 'MasterServiceStub' : provider + 'Stub';
+                stubs.push({ provider, class: useMasterServiceStub ? `masterServiceStub.${provider.toLowerCase()}Stub` : stubName });
                 createRelativeStubPath(stubName, specFile);
                 findImportForDI(specFile, componentFile, provider);
             });

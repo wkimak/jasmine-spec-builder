@@ -1,4 +1,5 @@
-import ts, { ExpressionStatement, ImportDeclaration, ArrowFunction, Statement, CallExpression, Identifier, PropertyAssignment, ObjectLiteralExpression } from 'typescript';
+import ts, { ExpressionStatement, ImportDeclaration, ArrowFunction, Statement, CallExpression, Identifier, PropertyAssignment, ObjectLiteralExpression, VariableStatement } from 'typescript';
+import { Stub } from './interfaces/Stub';
 
 function createArrowFn(statements: Statement[] = []): ArrowFunction {
     return ts.createArrowFunction(
@@ -24,7 +25,11 @@ export function getImport(importNames: string[], path: string): ImportDeclaratio
         <any>ts.createObjectLiteral(properties), undefined), ts.createLiteral(path));
 }
 
-export function getConfiguration(stubs: { provider: string, class: string }[], name: string): ExpressionStatement {
+export function getMasterServiceInit(): VariableStatement {
+    return ts.createVariableStatement(undefined, ts.createVariableDeclarationList([ts.createVariableDeclaration(ts.createIdentifier('masterServiceStub'), ts.createTypeReferenceNode(ts.createIdentifier('MasterServiceStub'), undefined))]));
+}
+
+export function getConfiguration(stubs: Stub[], name: string, useMasterServiceStub: boolean): ExpressionStatement {
     const beforeEach: Identifier = ts.createIdentifier("beforeEach"),
         async: Identifier = ts.createIdentifier('async'),
         testBed: Identifier = ts.createIdentifier('TestBed'),
@@ -34,7 +39,9 @@ export function getConfiguration(stubs: { provider: string, class: string }[], n
         provide: Identifier = ts.createIdentifier('provide'),
         useClass: Identifier = ts.createIdentifier('useClass'),
         compileComponents: Identifier = ts.createIdentifier('compileComponents'),
-        className: Identifier = ts.createIdentifier(name);
+        className: Identifier = ts.createIdentifier(name),
+        masterServiceStub: Identifier = ts.createIdentifier('masterServiceStub'),
+        MasterServiceStub: Identifier = ts.createIdentifier('MasterServiceStub');
 
 
     const declarationsProp: PropertyAssignment = ts.createPropertyAssignment(declarations, ts.createArrayLiteral([className]));
@@ -52,7 +59,11 @@ export function getConfiguration(stubs: { provider: string, class: string }[], n
         [declarationsProp, providersProp], true
     )])
 
-    const statements: ExpressionStatement[] = [ts.createExpressionStatement(ts.createPropertyAccess(testBed, <any>ts.createPropertyAccess(configure, <any>ts.createCall(compileComponents, undefined, undefined))))];
+    const master: ExpressionStatement = ts.createExpressionStatement(ts.createBinary(masterServiceStub, ts.createToken(ts.SyntaxKind.EqualsToken), ts.createNew(MasterServiceStub, undefined, undefined)));
+    const setup: ExpressionStatement = ts.createExpressionStatement(ts.createPropertyAccess(testBed, <any>ts.createPropertyAccess(configure, <any>ts.createCall(compileComponents, undefined, undefined))));
+
+    
+    const statements: ExpressionStatement[] = useMasterServiceStub ? [master, setup] : [setup];
 
     return ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [createArrowFn(statements)])]));
 }

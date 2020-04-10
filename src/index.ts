@@ -16,15 +16,23 @@ const terminal = argv.usage('Usage: $0 <command> [options]')
     describe: 'Load a File',
     type: 'string'
   })
+  .option('m', {
+    alias: 'master',
+    demandOption: false,
+    nargs: 0,
+    describe: 'Use MasterServiceStub',
+  })
   .help('h')
   .alias('h', 'help').argv;
 
-function writeFile(fileName, data): void {
+
+function writeFile(fileName: string, data: string): void {
   fs.writeFile(fileName, prettier.format(data, { parser: 'babel' }), (err) => {
     console.error('ERROR', err);
   });
 }
 
+const useMasterServiceStub: boolean = terminal.master;
 const specFileName: string = terminal.file.split('.').slice(0, -1).join('.') + '.spec.ts';
 const specPath: string = `${process.cwd()}/${specFileName}`;
 
@@ -35,7 +43,7 @@ if (!fs.existsSync(specPath)) {
     ts.ScriptTarget.Latest
   );
   const sourceFile: SourceFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);
-  const created: SourceFile = createSpecFile(componentFile, sourceFile);
+  const created: SourceFile = createSpecFile(componentFile, sourceFile, useMasterServiceStub);
   const printer: Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   writeFile(specFileName, printer.printFile(created));
 }
