@@ -98,7 +98,11 @@ export class SpecFileBuilder {
     }
   }
 
-  private addImport(path: string, name: string) {
+  private buildMasterServiceDeclaration(): void {
+    this.mainDescribeBody.statements = ts.createNodeArray([getMasterServiceInit(), ...this.mainDescribeBody.statements]);
+  }
+
+  private addImport(path: string, name: string): void {
     if (!this.imports.hasOwnProperty(path)) {
       this.imports[path] = [name];
     } else {
@@ -108,10 +112,6 @@ export class SpecFileBuilder {
 
   private prependImport(names: string[], path: string): void {
     this.specFile.statements = ts.createNodeArray([getImport(names, path), ...this.specFile.statements]);
-  }
-
-  private buildMasterServiceDeclaration(): void {
-    this.mainDescribeBody.statements = ts.createNodeArray([getMasterServiceInit(), ...this.mainDescribeBody.statements]);
   }
 }
 
