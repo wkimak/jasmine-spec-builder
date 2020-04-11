@@ -1,7 +1,7 @@
 import ts, { ExpressionStatement, ImportDeclaration, ArrowFunction, Statement, CallExpression, Identifier, PropertyAssignment, ObjectLiteralExpression, VariableStatement } from 'typescript';
 import { Stub } from './interfaces/Stub';
 
-function createArrowFn(statements: Statement[] = []): ArrowFunction {
+function getArrowFn(statements: Statement[] = []): ArrowFunction {
     return ts.createArrowFunction(
         undefined,
         undefined,
@@ -15,7 +15,7 @@ function createArrowFn(statements: Statement[] = []): ArrowFunction {
 }
 
 export function getDescribe(name: string): ExpressionStatement {
-    return ts.createExpressionStatement(ts.createCall(ts.createIdentifier('describe'), undefined, [ts.createStringLiteral(name), createArrowFn()]));
+    return ts.createExpressionStatement(ts.createCall(ts.createIdentifier('describe'), undefined, [ts.createStringLiteral(name), getArrowFn()]));
 }
 
 export function getImport(importNames: string[], path: string): ImportDeclaration {
@@ -26,8 +26,9 @@ export function getImport(importNames: string[], path: string): ImportDeclaratio
 }
 
 export function getMasterServiceInit(): VariableStatement {
-    return ts.createVariableStatement(undefined, ts.createVariableDeclarationList([ts.createVariableDeclaration(ts.createIdentifier('masterServiceStub'), ts.createTypeReferenceNode(ts.createIdentifier('MasterServiceStub'), undefined))]));
+    return ts.createVariableStatement(undefined, ts.createVariableDeclarationList([ts.createVariableDeclaration(ts.createIdentifier('masterServiceStub'), ts.createTypeReferenceNode(ts.createIdentifier('MasterServiceStub'), undefined))], ts.NodeFlags.Let));
 }
+
 
 export function getConfiguration(stubs: Stub[], name: string, useMasterServiceStub: boolean): ExpressionStatement {
     const beforeEach: Identifier = ts.createIdentifier("beforeEach"),
@@ -62,8 +63,8 @@ export function getConfiguration(stubs: Stub[], name: string, useMasterServiceSt
     const master: ExpressionStatement = ts.createExpressionStatement(ts.createBinary(masterServiceStub, ts.createToken(ts.SyntaxKind.EqualsToken), ts.createNew(MasterServiceStub, undefined, undefined)));
     const setup: ExpressionStatement = ts.createExpressionStatement(ts.createPropertyAccess(testBed, <any>ts.createPropertyAccess(configure, <any>ts.createCall(compileComponents, undefined, undefined))));
 
-    
+
     const statements: ExpressionStatement[] = useMasterServiceStub ? [master, setup] : [setup];
 
-    return ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [createArrowFn(statements)])]));
+    return ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [getArrowFn(statements)])]));
 }

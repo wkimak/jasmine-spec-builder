@@ -4,13 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
-function createArrowFn(statements = []) {
+function getArrowFn(statements = []) {
     return typescript_1.default.createArrowFunction(undefined, undefined, [
         typescript_1.default.createParameter(undefined, undefined, undefined, typescript_1.default.createToken(null), undefined, undefined, undefined)
     ], undefined, typescript_1.default.createToken(typescript_1.default.SyntaxKind.EqualsGreaterThanToken), typescript_1.default.createBlock(statements, true));
 }
 function getDescribe(name) {
-    return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(typescript_1.default.createIdentifier('describe'), undefined, [typescript_1.default.createStringLiteral(name), createArrowFn()]));
+    return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(typescript_1.default.createIdentifier('describe'), undefined, [typescript_1.default.createStringLiteral(name), getArrowFn()]));
 }
 exports.getDescribe = getDescribe;
 function getImport(importNames, path) {
@@ -20,7 +20,7 @@ function getImport(importNames, path) {
 }
 exports.getImport = getImport;
 function getMasterServiceInit() {
-    return typescript_1.default.createVariableStatement(undefined, typescript_1.default.createVariableDeclarationList([typescript_1.default.createVariableDeclaration(typescript_1.default.createIdentifier('masterServiceStub'), typescript_1.default.createTypeReferenceNode(typescript_1.default.createIdentifier('MasterServiceStub'), undefined))]));
+    return typescript_1.default.createVariableStatement(undefined, typescript_1.default.createVariableDeclarationList([typescript_1.default.createVariableDeclaration(typescript_1.default.createIdentifier('masterServiceStub'), typescript_1.default.createTypeReferenceNode(typescript_1.default.createIdentifier('MasterServiceStub'), undefined))], typescript_1.default.NodeFlags.Let));
 }
 exports.getMasterServiceInit = getMasterServiceInit;
 function getConfiguration(stubs, name, useMasterServiceStub) {
@@ -35,6 +35,6 @@ function getConfiguration(stubs, name, useMasterServiceStub) {
     const master = typescript_1.default.createExpressionStatement(typescript_1.default.createBinary(masterServiceStub, typescript_1.default.createToken(typescript_1.default.SyntaxKind.EqualsToken), typescript_1.default.createNew(MasterServiceStub, undefined, undefined)));
     const setup = typescript_1.default.createExpressionStatement(typescript_1.default.createPropertyAccess(testBed, typescript_1.default.createPropertyAccess(configure, typescript_1.default.createCall(compileComponents, undefined, undefined))));
     const statements = useMasterServiceStub ? [master, setup] : [setup];
-    return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(beforeEach, undefined, [typescript_1.default.createCall(async, undefined, [createArrowFn(statements)])]));
+    return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(beforeEach, undefined, [typescript_1.default.createCall(async, undefined, [getArrowFn(statements)])]));
 }
 exports.getConfiguration = getConfiguration;

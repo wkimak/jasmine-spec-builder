@@ -9,7 +9,7 @@ const typescript_1 = __importDefault(require("typescript"));
 const fs_1 = __importDefault(require("fs"));
 const prettier_1 = __importDefault(require("prettier"));
 const yargs_1 = __importDefault(require("yargs"));
-const buildSpecFile_1 = __importDefault(require("./buildSpecFile"));
+const SpecFileBuilder_1 = __importDefault(require("./SpecFileBuilder"));
 const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
     .command('build', 'Build test file')
     .example('$0 build -f app.component.ts', 'build test file for app.component.ts')
@@ -37,9 +37,7 @@ const useMasterServiceStub = terminal.master;
 const specFileName = terminal.file.split('.').slice(0, -1).join('.') + '.spec.ts';
 const specPath = `${process.cwd()}/${specFileName}`;
 if (!fs_1.default.existsSync(specPath)) {
-    const componentFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
-    const sourceFile = typescript_1.default.createSourceFile(specFileName, "", typescript_1.default.ScriptTarget.Latest, false);
-    const created = buildSpecFile_1.default(componentFile, sourceFile, useMasterServiceStub);
+    const created = new SpecFileBuilder_1.default(terminal.file, specFileName, useMasterServiceStub).specFile;
     const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
     writeFile(specFileName, printer.printFile(created));
 }

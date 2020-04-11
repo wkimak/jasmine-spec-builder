@@ -4,7 +4,7 @@ import ts, { SourceFile, Printer } from 'typescript';
 import fs from 'fs';
 import prettier from 'prettier';
 import argv from 'yargs';
-import createSpecFile from './buildSpecFile';
+import SpecFileBuilder from './SpecFileBuilder';
 
 const terminal = argv.usage('Usage: $0 <command> [options]')
   .command('build', 'Build test file')
@@ -37,13 +37,7 @@ const specFileName: string = terminal.file.split('.').slice(0, -1).join('.') + '
 const specPath: string = `${process.cwd()}/${specFileName}`;
 
 if (!fs.existsSync(specPath)) {
-  const componentFile: SourceFile = ts.createSourceFile(
-    terminal.file,
-    fs.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'),
-    ts.ScriptTarget.Latest
-  );
-  const sourceFile: SourceFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);
-  const created: SourceFile = createSpecFile(componentFile, sourceFile, useMasterServiceStub);
+  const created: SourceFile = new SpecFileBuilder(terminal.file, specFileName, useMasterServiceStub).specFile;
   const printer: Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   writeFile(specFileName, printer.printFile(created));
 }

@@ -9,7 +9,7 @@ const pathHelpers_1 = require("./pathHelpers");
 const fs_1 = __importDefault(require("fs"));
 class SpecFileBuilder {
     constructor(componentFileName, specFileName, useMasterServiceStub) {
-        this.imports = [];
+        this.imports = {};
         this.setSourceFiles(componentFileName, specFileName);
         this.buildDescribes(this.componentFile, this.specFile);
         this.buildConfiguration(this.generateStubs(useMasterServiceStub), useMasterServiceStub);
@@ -34,23 +34,49 @@ class SpecFileBuilder {
             }
         });
     }
-    buildMasterServiceDeclaration() {
-        this.mainDescribeBody.statements = typescript_1.default.createNodeArray([templates_1.getMasterServiceInit(), ...this.mainDescribeBody.statements]);
+    addImport(path, name) {
+        if (!this.imports.hasOwnProperty(path)) {
+            this.imports[path] = [name];
+        }
+        else {
+            this.imports[path].push(name);
+        }
+    }
+    generateMasterServiceStubs(constructor) {
+        const stubs = [];
+        const stubName = 'MasterServiceStub';
+        this.addImport(pathHelpers_1.findRelativeStubPath(stubName), stubName);
+        constructor.parameters.forEach((param) => {
+            const provider = param.type.typeName.text;
+            const stubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
+            stubs.push({ provider, class: stubName });
+            this.addImport(pathHelpers_1.findProviderPath(this.componentFile, provider), provider);
+        });
+        return stubs;
+    }
+    generateNonMasterServiceStubs(constructor) {
+        const stubs = [];
+        constructor.parameters.forEach((param) => {
+            const provider = param.type.typeName.text;
+            const stubName = provider + 'Stub';
+            stubs.push({ provider, class: stubName });
+            this.addImport(pathHelpers_1.findProviderPath(this.componentFile, provider), provider);
+            this.addImport(pathHelpers_1.findRelativeStubPath(stubName), stubName);
+        });
+        return stubs;
     }
     generateStubs(useMasterServiceStub) {
-        const stubs = [];
-        for (const childNode of this.componentClassNode.members) {
-            if (typescript_1.default.isConstructorDeclaration(childNode)) {
-                childNode.parameters.forEach((param) => {
-                    const provider = param.type.typeName.text;
-                    const stubName = useMasterServiceStub ? 'MasterServiceStub' : provider + 'Stub';
-                    stubs.push({ provider, class: useMasterServiceStub ? `masterServiceStub.${provider.toLowerCase()}Stub` : stubName });
-                    this.imports.push({ name: provider, path: pathHelpers_1.findProviderPath(this.componentFile, provider) }, { name: stubName, path: pathHelpers_1.findRelativeStubPath(stubName) });
-                });
-                return stubs;
+        for (const member of this.componentClassNode.members) {
+            if (typescript_1.default.isConstructorDeclaration(member)) {
+                if (useMasterServiceStub) {
+                    return this.generateMasterServiceStubs(member);
+                }
+                else {
+                    return this.generateNonMasterServiceStubs(member);
+                }
             }
         }
-        return stubs;
+        return [];
     }
     buildConfiguration(stubs, useMasterServiceStub) {
         const config = templates_1.getConfiguration(stubs, this.componentClassNode.name.text, useMasterServiceStub);
@@ -59,12 +85,15 @@ class SpecFileBuilder {
     buildImports() {
         this.prependImport(['TestBed', 'async'], '@angular/core/testing');
         this.prependImport([this.componentClassNode.name.text], `./${pathHelpers_1.removePathExtension(this.componentFile.fileName)}`);
-        this.imports.forEach(i => {
-            this.prependImport([i.name], i.path);
-        });
+        for (const path in this.imports) {
+            this.prependImport(this.imports[path], path);
+        }
     }
     prependImport(names, path) {
         this.specFile.statements = typescript_1.default.createNodeArray([templates_1.getImport(names, path), ...this.specFile.statements]);
+    }
+    buildMasterServiceDeclaration() {
+        this.mainDescribeBody.statements = typescript_1.default.createNodeArray([templates_1.getMasterServiceInit(), ...this.mainDescribeBody.statements]);
     }
 }
 exports.SpecFileBuilder = SpecFileBuilder;
