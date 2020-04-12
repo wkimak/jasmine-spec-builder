@@ -9,6 +9,7 @@ function getArrowFn(statements = []) {
         typescript_1.default.createParameter(undefined, undefined, undefined, typescript_1.default.createToken(null), undefined, undefined, undefined)
     ], undefined, typescript_1.default.createToken(typescript_1.default.SyntaxKind.EqualsGreaterThanToken), typescript_1.default.createBlock(statements, true));
 }
+exports.getArrowFn = getArrowFn;
 function getDescribe(name) {
     return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(typescript_1.default.createIdentifier('describe'), undefined, [typescript_1.default.createStringLiteral(name), getArrowFn()]));
 }
@@ -23,18 +24,3 @@ function getMasterServiceInit() {
     return typescript_1.default.createVariableStatement(undefined, typescript_1.default.createVariableDeclarationList([typescript_1.default.createVariableDeclaration(typescript_1.default.createIdentifier('masterServiceStub'), typescript_1.default.createTypeReferenceNode(typescript_1.default.createIdentifier('MasterServiceStub'), undefined))], typescript_1.default.NodeFlags.Let));
 }
 exports.getMasterServiceInit = getMasterServiceInit;
-function getConfiguration(stubs, name, useMasterServiceStub) {
-    const beforeEach = typescript_1.default.createIdentifier("beforeEach"), async = typescript_1.default.createIdentifier('async'), testBed = typescript_1.default.createIdentifier('TestBed'), configureTestingModule = typescript_1.default.createIdentifier('configureTestingModule'), declarations = typescript_1.default.createIdentifier('declarations'), providers = typescript_1.default.createIdentifier('providers'), provide = typescript_1.default.createIdentifier('provide'), useClass = typescript_1.default.createIdentifier('useClass'), compileComponents = typescript_1.default.createIdentifier('compileComponents'), className = typescript_1.default.createIdentifier(name), masterServiceStub = typescript_1.default.createIdentifier('masterServiceStub'), MasterServiceStub = typescript_1.default.createIdentifier('MasterServiceStub');
-    const declarationsProp = typescript_1.default.createPropertyAssignment(declarations, typescript_1.default.createArrayLiteral([className]));
-    const providersArray = stubs.map(stub => {
-        return typescript_1.default.createObjectLiteral([typescript_1.default.createPropertyAssignment(provide, typescript_1.default.createIdentifier(stub.provider)),
-            typescript_1.default.createPropertyAssignment(useClass, typescript_1.default.createIdentifier(stub.class))]);
-    });
-    const providersProp = typescript_1.default.createPropertyAssignment(providers, typescript_1.default.createArrayLiteral(providersArray));
-    const configure = typescript_1.default.createCall(configureTestingModule, undefined, [typescript_1.default.createObjectLiteral([declarationsProp, providersProp], true)]);
-    const master = typescript_1.default.createExpressionStatement(typescript_1.default.createBinary(masterServiceStub, typescript_1.default.createToken(typescript_1.default.SyntaxKind.EqualsToken), typescript_1.default.createNew(MasterServiceStub, undefined, undefined)));
-    const setup = typescript_1.default.createExpressionStatement(typescript_1.default.createPropertyAccess(testBed, typescript_1.default.createPropertyAccess(configure, typescript_1.default.createCall(compileComponents, undefined, undefined))));
-    const statements = useMasterServiceStub ? [master, setup] : [setup];
-    return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(beforeEach, undefined, [typescript_1.default.createCall(async, undefined, [getArrowFn(statements)])]));
-}
-exports.getConfiguration = getConfiguration;

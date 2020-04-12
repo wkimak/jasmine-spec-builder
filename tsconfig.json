@@ -15,7 +15,7 @@
         "esModuleInterop": true
     },
     "include": [
-        "./src/*.ts"
+        "./src/*.ts", "src/component/ComponentSpecBuilder.ts", "src/builders/SpecFileBuilder.ts", "src/builders/ServiceSpecBuilder.ts", "src/builders/ComponentSpecBuilder.ts"
     ],
     "exclude": [
         "node_modules",
