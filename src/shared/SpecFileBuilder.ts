@@ -1,12 +1,14 @@
 import ts, { SourceFile, ClassDeclaration, Block, FunctionDeclaration, ConstructorDeclaration } from 'typescript';
-import { getDescribe, getImport, getMasterServiceInit } from '../templates';
-import { Stub } from '../interfaces/Stub';
-import { Import } from '../interfaces/Import';
-import { findProviderPath, findRelativeStubPath, removePathExtension } from '../pathHelpers';
+import { Stub } from './interfaces/Stub';
+import { Import } from './interfaces/Import';
+import { findProviderPath, findRelativeStubPath, removePathExtension } from './pathHelpers';
 import fs from 'fs';
+import getDescribe from './templates/describe';
+import getMasterServiceInit from './templates/masterServiceInit';
+import getImport from './templates/import';
 
 
-export class SpecFileBuilder {
+class SpecFileBuilder {
   targetFile: SourceFile;
   sourceFile: SourceFile;
   classNode: ClassDeclaration;
@@ -14,19 +16,19 @@ export class SpecFileBuilder {
   imports: Import = {};
 
   // Differences
-    // Services
-      // Configuration is different:
-        // no Declarations array
-        // Service is listed as a provider
-        // potential to add imports specific to services (FormsModule)
-      // potential to add form field describe blocks
+  // Services
+  // Configuration is different:
+  // no Declarations array
+  // Service is listed as a provider
+  // potential to add imports specific to services (FormsModule)
+  // potential to add form field describe blocks
 
-    // resources
-      // Configuration is different:
-        // no Declarations array
-        // Resource is listed as a provider
-        // potential to add imports specific to resources (HttpRequestModule) 
-      // potential to add http request describe blocks based on HTTP verbs 
+  // resources
+  // Configuration is different:
+  // no Declarations array
+  // Resource is listed as a provider
+  // potential to add imports specific to resources (HttpRequestModule) 
+  // potential to add http request describe blocks based on HTTP verbs 
 
   protected setSourceFiles(componentFileName: string, specFileName: string): void {
     this.targetFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);

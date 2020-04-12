@@ -9,7 +9,8 @@ const typescript_1 = __importDefault(require("typescript"));
 const fs_1 = __importDefault(require("fs"));
 const prettier_1 = __importDefault(require("prettier"));
 const yargs_1 = __importDefault(require("yargs"));
-const ServiceSpecBuilder_1 = require("./builders/ServiceSpecBuilder");
+const ComponentSpecBuilder_1 = require("./component/ComponentSpecBuilder");
+const ServiceSpecBuilder_1 = require("./service/ServiceSpecBuilder");
 const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
     .command('build', 'Build test file')
     .example('$0 build -f app.component.ts', 'build test file for app.component.ts')
@@ -37,7 +38,20 @@ const useMasterServiceStub = terminal.master;
 const specFileName = terminal.file.split('.').slice(0, -1).join('.') + '.spec.ts';
 const specPath = `${process.cwd()}/${specFileName}`;
 if (!fs_1.default.existsSync(specPath)) {
-    const created = new ServiceSpecBuilder_1.ServiceSpecBuilder(terminal.file, specFileName, useMasterServiceStub).targetFile;
+    const split = terminal.file.split('.');
+    const fileType = split[split.length - 2];
+    let created;
+    switch (fileType) {
+        case 'component':
+            created = new ComponentSpecBuilder_1.ComponentSpecBuilder(terminal.file, specFileName, useMasterServiceStub).targetFile;
+            break;
+        case 'service':
+            created = new ServiceSpecBuilder_1.ServiceSpecBuilder(terminal.file, specFileName, useMasterServiceStub).targetFile;
+            break;
+        case 'resource':
+            console.log('TO DO');
+            break;
+    }
     const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
     writeFile(specFileName, printer.printFile(created));
 }

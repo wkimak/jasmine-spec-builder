@@ -1,7 +1,8 @@
-import SpecFileBuilder from "./SpecFileBuilder";
+import SpecFileBuilder from "../shared/SpecFileBuilder";
 import ts from 'typescript';
-import { Stub } from "../interfaces/Stub";
-import { getComponentProviders, getComponentDeclarations, getConfiguration } from '../templates/configuration';
+import { Stub } from "../shared/interfaces/Stub";
+import { getComponentConfig } from './configuration';
+import { getConfiguration } from '../shared/templates/configuration';
 
 
 export class ComponentSpecBuilder extends SpecFileBuilder {
@@ -15,9 +16,7 @@ export class ComponentSpecBuilder extends SpecFileBuilder {
   }
 
   private buildConfiguration(stubs: Stub[], useMasterServiceStub: boolean): void {
-    const providers = getComponentProviders(stubs);
-    const declarations = getComponentDeclarations(this.classNode.name.text);
-    const config = getConfiguration(providers, declarations, useMasterServiceStub);
+    const config = getConfiguration(getComponentConfig(stubs, this.classNode.name.text), useMasterServiceStub);
     this.mainDescribeBody.statements = ts.createNodeArray([config, ...this.mainDescribeBody.statements]);
   }
 }
