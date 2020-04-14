@@ -4,8 +4,7 @@ import ts, { SourceFile, Printer } from 'typescript';
 import fs from 'fs';
 import prettier from 'prettier';
 import argv from 'yargs';
-import { ComponentSpecBuilder } from './component/ComponentSpecBuilder';
-import { ServiceSpecBuilder } from './service/ServiceSpecBuilder';
+import SpecFileBuilder from './SpecFileBuilder';
 
 const terminal = argv.usage('Usage: $0 <command> [options]')
   .command('build', 'Build test file')
@@ -27,32 +26,17 @@ const terminal = argv.usage('Usage: $0 <command> [options]')
   .alias('h', 'help').argv;
 
 
-function writeFile(fileName: string, data: string): void {
-  fs.writeFile(fileName, prettier.format(data, { parser: 'babel' }), (err) => {
-    console.error('ERROR', err);
-  });
-}
-
-const useMasterServiceStub: boolean = terminal.master;
 const specFileName: string = terminal.file.split('.').slice(0, -1).join('.') + '.spec.ts';
 const specPath: string = `${process.cwd()}/${specFileName}`;
 
 if (!fs.existsSync(specPath)) {
-  const split: string[] = terminal.file.split('.');
-  const fileType: string = split[split.length - 2];
-  let created: SourceFile;
-  switch(fileType) {
-    case 'component':
-      created = new ComponentSpecBuilder(terminal.file, specFileName, useMasterServiceStub).targetFile;
-      break;
-    case 'service':
-      created = new ServiceSpecBuilder(terminal.file, specFileName, useMasterServiceStub).targetFile;
-      break;
-    case 'resource':
-      console.log('TO DO');
-      break;
-  }
+  const sourceFile = ts.createSourceFile(terminal.file, fs.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), ts.ScriptTarget.Latest);
+  const targetFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);
+  const created: SourceFile = new SpecFileBuilder(sourceFile, terminal.master).build(targetFile);
   const printer: Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  writeFile(specFileName, printer.printFile(created));
+
+  fs.writeFile(specFileName, prettier.format(printer.printFile(created), { parser: 'babel' }), (err) => {
+    console.error('ERROR', err);
+  });
 }
 

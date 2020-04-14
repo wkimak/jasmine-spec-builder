@@ -9,8 +9,7 @@ const typescript_1 = __importDefault(require("typescript"));
 const fs_1 = __importDefault(require("fs"));
 const prettier_1 = __importDefault(require("prettier"));
 const yargs_1 = __importDefault(require("yargs"));
-const ComponentSpecBuilder_1 = require("./component/ComponentSpecBuilder");
-const ServiceSpecBuilder_1 = require("./service/ServiceSpecBuilder");
+const SpecFileBuilder_1 = __importDefault(require("./SpecFileBuilder"));
 const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
     .command('build', 'Build test file')
     .example('$0 build -f app.component.ts', 'build test file for app.component.ts')
@@ -29,29 +28,14 @@ const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
 })
     .help('h')
     .alias('h', 'help').argv;
-function writeFile(fileName, data) {
-    fs_1.default.writeFile(fileName, prettier_1.default.format(data, { parser: 'babel' }), (err) => {
-        console.error('ERROR', err);
-    });
-}
-const useMasterServiceStub = terminal.master;
 const specFileName = terminal.file.split('.').slice(0, -1).join('.') + '.spec.ts';
 const specPath = `${process.cwd()}/${specFileName}`;
 if (!fs_1.default.existsSync(specPath)) {
-    const split = terminal.file.split('.');
-    const fileType = split[split.length - 2];
-    let created;
-    switch (fileType) {
-        case 'component':
-            created = new ComponentSpecBuilder_1.ComponentSpecBuilder(terminal.file, specFileName, useMasterServiceStub).targetFile;
-            break;
-        case 'service':
-            created = new ServiceSpecBuilder_1.ServiceSpecBuilder(terminal.file, specFileName, useMasterServiceStub).targetFile;
-            break;
-        case 'resource':
-            console.log('TO DO');
-            break;
-    }
+    const sourceFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
+    const targetFile = typescript_1.default.createSourceFile(specFileName, "", typescript_1.default.ScriptTarget.Latest, false);
+    const created = new SpecFileBuilder_1.default(sourceFile, terminal.master).build(targetFile);
     const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
-    writeFile(specFileName, printer.printFile(created));
+    fs_1.default.writeFile(specFileName, prettier_1.default.format(printer.printFile(created), { parser: 'babel' }), (err) => {
+        console.error('ERROR', err);
+    });
 }

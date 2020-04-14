@@ -16,8 +16,8 @@ function findRelativeStubPath(stubName) {
     return path_1.default.relative(specPath, stubPath);
 }
 exports.findRelativeStubPath = findRelativeStubPath;
-function findProviderPath(componentFile, provider) {
-    for (const childNode of componentFile.statements) {
+function findProviderPath(sourceFile, provider) {
+    for (const childNode of sourceFile.statements) {
         if (typescript_1.default.isImportDeclaration(childNode)) {
             const imports = childNode.importClause.namedBindings.elements;
             const path = childNode.moduleSpecifier.text;

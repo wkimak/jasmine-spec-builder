@@ -1,4 +1,4 @@
-export interface Stub {
+export interface StubModel {
     provider: string;
     class: string;
 }

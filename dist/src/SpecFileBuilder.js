@@ -4,103 +4,64 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
-const pathHelpers_1 = require("./shared/pathHelpers");
-const fs_1 = __importDefault(require("fs"));
-const describe_1 = __importDefault(require("./shared/templates/describe"));
-const masterServiceInit_1 = __importDefault(require("./shared/templates/masterServiceInit"));
-const import_1 = __importDefault(require("./shared/templates/import"));
+const Imports_1 = __importDefault(require("./Imports/Imports"));
+const Describes_1 = __importDefault(require("./Describes/Describes"));
+const ComponentConfiguration_1 = __importDefault(require("./Configuration/ComponentConfiguration"));
+const ServiceConfiguration_1 = __importDefault(require("./Configuration/ServiceConfiguration"));
+const regex_1 = require("./shared/regex");
 class SpecFileBuilder {
-    constructor() {
-        this.imports = {};
+    constructor(sourceFile, useMasterServiceStub) {
+        this.classNode = this.findClassNode(sourceFile);
+        this.constructorParams = this.findConstructorParams(this.classNode);
+        this.imports = new Imports_1.default(sourceFile, this.classNode, this.constructorParams, useMasterServiceStub).getImportsTemplate();
+        this.describes = new Describes_1.default(sourceFile).getDescribesTemplate();
+        this.configuration = regex_1.isComponentFile.test(sourceFile.fileName) ?
+            new ComponentConfiguration_1.default(this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate() :
+            new ServiceConfiguration_1.default(this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate();
     }
-    // Differences
-    // Services
-    // Configuration is different:
-    // no Declarations array
-    // Service is listed as a provider
-    // potential to add imports specific to services (FormsModule)
-    // potential to add form field describe blocks
-    // resources
-    // Configuration is different:
-    // no Declarations array
-    // Resource is listed as a provider
-    // potential to add imports specific to resources (HttpRequestModule) 
-    // potential to add http request describe blocks based on HTTP verbs 
-    setSourceFiles(componentFileName, specFileName) {
-        this.targetFile = typescript_1.default.createSourceFile(specFileName, "", typescript_1.default.ScriptTarget.Latest, false);
-        this.sourceFile = typescript_1.default.createSourceFile(componentFileName, fs_1.default.readFileSync(`${process.cwd()}/${componentFileName}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
-        ;
-    }
-    buildDescribes(sourceFile, targetFile) {
-        typescript_1.default.forEachChild(sourceFile, childNode => {
-            if (typescript_1.default.isClassDeclaration(childNode) || typescript_1.default.isFunctionDeclaration(childNode) || typescript_1.default.isMethodDeclaration(childNode)) {
-                const node = childNode;
-                targetFile.statements = typescript_1.default.createNodeArray([...targetFile.statements, describe_1.default(node.name.text)]);
-            }
+    findClassNode(sourceFile) {
+        for (const childNode of sourceFile.statements) {
             if (typescript_1.default.isClassDeclaration(childNode)) {
-                this.classNode = childNode;
-                this.mainDescribeBody = targetFile.statements[targetFile.statements.length - 1].expression.arguments[1].body;
-                this.buildDescribes(childNode, this.mainDescribeBody);
+                return childNode;
             }
-        });
+        }
     }
-    generateStubs(useMasterServiceStub) {
-        for (const member of this.classNode.members) {
+    findConstructorParams(classNode) {
+        for (const member of classNode.members) {
             if (typescript_1.default.isConstructorDeclaration(member)) {
-                if (useMasterServiceStub) {
-                    return this.generateMasterServiceStubs(member);
-                }
-                else {
-                    return this.generateNonMasterServiceStubs(member);
-                }
+                return member.parameters;
             }
         }
-        return [];
     }
-    generateMasterServiceStubs(constructor) {
-        const stubs = [];
-        const stubName = 'MasterServiceStub';
-        this.addImport(pathHelpers_1.findRelativeStubPath(stubName), stubName);
-        constructor.parameters.forEach((param) => {
-            const provider = param.type.typeName.text;
-            const stubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
-            stubs.push({ provider, class: stubName });
-            this.addImport(pathHelpers_1.findProviderPath(this.sourceFile, provider), provider);
+    ;
+    build(targetFile) {
+        this.describes.forEach(childNode => {
+            const body = childNode.expression.arguments[1].body;
+            const isClassDescribe = body.statements.length > 0;
+            if (isClassDescribe) {
+                body.statements = typescript_1.default.createNodeArray([...this.configuration, ...body.statements]);
+            }
         });
-        return stubs;
-    }
-    generateNonMasterServiceStubs(constructor) {
-        const stubs = [];
-        constructor.parameters.forEach((param) => {
-            const provider = param.type.typeName.text;
-            const stubName = provider + 'Stub';
-            stubs.push({ provider, class: stubName });
-            this.addImport(pathHelpers_1.findProviderPath(this.sourceFile, provider), provider);
-            this.addImport(pathHelpers_1.findRelativeStubPath(stubName), stubName);
-        });
-        return stubs;
-    }
-    buildImports() {
-        this.prependImport(['TestBed', 'async'], '@angular/core/testing');
-        this.prependImport([this.classNode.name.text], `./${pathHelpers_1.removePathExtension(this.sourceFile.fileName)}`);
-        for (const path in this.imports) {
-            this.prependImport(this.imports[path], path);
-        }
-    }
-    buildMasterServiceDeclaration() {
-        this.mainDescribeBody.statements = typescript_1.default.createNodeArray([masterServiceInit_1.default(), ...this.mainDescribeBody.statements]);
-    }
-    addImport(path, name) {
-        if (!this.imports.hasOwnProperty(path)) {
-            this.imports[path] = [name];
-        }
-        else {
-            this.imports[path].push(name);
-        }
-    }
-    prependImport(names, path) {
-        this.targetFile.statements = typescript_1.default.createNodeArray([import_1.default(names, path), ...this.targetFile.statements]);
+        targetFile.statements = typescript_1.default.createNodeArray([...this.imports, ...this.describes]);
+        return targetFile;
     }
 }
-exports.SpecFileBuilder = SpecFileBuilder;
 exports.default = SpecFileBuilder;
+// Differences
+// Services
+// Configuration is different:
+// no Declarations array
+// Service is listed as a provider
+// potential to add imports specific to services (FormsModule)
+// potential to add form field describe blocks
+// resources
+// Configuration is different:
+// no Declarations array
+// Resource is listed as a provider
+// potential to add imports specific to resources (HttpRequestModule) 
+// potential to add http request describe blocks based on HTTP verbs 
+// Making methods independant:
+// setSourceFiles must be called first
+// set sourceFile
+// set targetFile
+// buildFile must be called last
