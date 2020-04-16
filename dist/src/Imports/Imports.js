@@ -30,7 +30,10 @@ class ImportsBuilder {
     }
     buildMasterServiceImportsObj() {
         const stubName = 'MasterServiceStub';
-        this.addImport(pathHelpers_1.findRelativeStubPath(stubName), stubName);
+        const stubPath = pathHelpers_1.findRelativeStubPath(stubName);
+        if (stubPath) {
+            this.addImport(stubPath, stubName);
+        }
         this.constructorParams.forEach((param) => {
             const provider = param.type.typeName.text;
             this.addImport(pathHelpers_1.findProviderPath(this.sourceFile, provider), provider);
@@ -41,7 +44,10 @@ class ImportsBuilder {
             const provider = param.type.typeName.text;
             const stubName = provider + 'Stub';
             this.addImport(pathHelpers_1.findProviderPath(this.sourceFile, provider), provider);
-            this.addImport(pathHelpers_1.findRelativeStubPath(stubName), stubName);
+            const stubPath = pathHelpers_1.findRelativeStubPath(stubName);
+            if (stubPath) {
+                this.addImport(stubPath, stubName);
+            }
         });
     }
     getImportsTemplate() {

@@ -9,7 +9,7 @@ export function removePathExtension(path: string): string {
 export function findRelativeStubPath(stubName: string): string {
     const specPath = process.cwd();
     const stubPath = searchFileSystem(stubName, path.dirname(specPath));
-    return path.relative(specPath, stubPath);
+    return stubPath && path.relative(specPath, stubPath);
 }
 
 export function findProviderPath(sourceFile: SourceFile, provider: string): string {
@@ -40,7 +40,7 @@ export function searchFileSystem(stubName: string, currentPath: string): string 
             for (const file in files) {
                 const currentFile: string = currentPath + '/' + files[file];
                 const stats: fs.Stats = fs.statSync(currentFile);
-                if (stats.isFile() && path.basename(currentFile) === stubName + '.ts') {
+                if (stats.isFile() && path.basename(currentFile).toLowerCase() === stubName.toLowerCase() + '.ts') {
                     fileFound = removePathExtension(currentFile);
                 }
                 else if (stats.isDirectory() && !excludedDirectories.hasOwnProperty(path.basename(currentPath))) {

@@ -1,6 +1,7 @@
 import { StubModel } from "./StubModel";
 import ts, { Identifier, ExpressionStatement, ObjectLiteralExpression, VariableStatement, ParameterDeclaration, SourceFile, ClassDeclaration } from "typescript";
 import getArrowFn from "../shared/arrowFunction";
+import { findRelativeStubPath } from "../Imports/pathHelpers";
 
 class Configuration {
   classNode: ClassDeclaration;
@@ -11,7 +12,6 @@ class Configuration {
     this.classNode = classNode;
     this.constructorParams = constructorParams;
     this.useMasterServiceStub = useMasterServiceStub;
-    useMasterServiceStub && this.getMasterServiceInit();
   }
 
   private getMasterServiceInit(): VariableStatement {
@@ -25,10 +25,15 @@ class Configuration {
       let stubName: string;
       if (this.useMasterServiceStub) {
         stubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
+        if (findRelativeStubPath('MasterServiceStub') && findRelativeStubPath(provider + 'Stub')) {
+          stubs.push({ provider, class: stubName });
+        }
       } else {
         stubName = provider + 'Stub';
+        if (findRelativeStubPath(stubName)) {
+          stubs.push({ provider, class: stubName });
+        }
       }
-      stubs.push({ provider, class: stubName });
     });
     return stubs;
   }
@@ -47,11 +52,11 @@ class Configuration {
     const async: Identifier = ts.createIdentifier('async');
     const masterServiceStub: Identifier = ts.createIdentifier('masterServiceStub');
     const MasterServiceStub: Identifier = ts.createIdentifier('MasterServiceStub');
-    
+
     const master: ExpressionStatement = ts.createExpressionStatement(ts.createBinary(masterServiceStub, ts.createToken(ts.SyntaxKind.EqualsToken), ts.createNew(MasterServiceStub, undefined, undefined)));
-    const statements: ExpressionStatement[] = this.useMasterServiceStub ? [master, testBed] : [testBed];
+    const statements: ExpressionStatement[] = this.useMasterServiceStub && findRelativeStubPath('MasterServiceStub') ? [master, testBed] : [testBed];
     const expression = ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [getArrowFn(statements)])]));
-    return this.useMasterServiceStub ? [this.getMasterServiceInit(), expression] : [expression];
+    return this.useMasterServiceStub && findRelativeStubPath('MasterServiceStub') ? [this.getMasterServiceInit(), expression] : [expression];
   }
 }
 

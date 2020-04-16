@@ -13,7 +13,7 @@ exports.removePathExtension = removePathExtension;
 function findRelativeStubPath(stubName) {
     const specPath = process.cwd();
     const stubPath = searchFileSystem(stubName, path_1.default.dirname(specPath));
-    return path_1.default.relative(specPath, stubPath);
+    return stubPath && path_1.default.relative(specPath, stubPath);
 }
 exports.findRelativeStubPath = findRelativeStubPath;
 function findProviderPath(sourceFile, provider) {
@@ -43,7 +43,7 @@ function searchFileSystem(stubName, currentPath) {
             for (const file in files) {
                 const currentFile = currentPath + '/' + files[file];
                 const stats = fs_1.default.statSync(currentFile);
-                if (stats.isFile() && path_1.default.basename(currentFile) === stubName + '.ts') {
+                if (stats.isFile() && path_1.default.basename(currentFile).toLowerCase() === stubName.toLowerCase() + '.ts') {
                     fileFound = removePathExtension(currentFile);
                 }
                 else if (stats.isDirectory() && !excludedDirectories.hasOwnProperty(path_1.default.basename(currentPath))) {

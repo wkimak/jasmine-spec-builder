@@ -32,7 +32,10 @@ class ImportsBuilder {
 
   private buildMasterServiceImportsObj() {
     const stubName: string = 'MasterServiceStub';
-    this.addImport(findRelativeStubPath(stubName), stubName);
+    const stubPath: string = findRelativeStubPath(stubName);
+    if (stubPath) {
+      this.addImport(stubPath, stubName);
+    }
     this.constructorParams.forEach((param: any) => {
       const provider: string = param.type.typeName.text;
       this.addImport(findProviderPath(this.sourceFile, provider), provider)
@@ -44,7 +47,10 @@ class ImportsBuilder {
       const provider: string = param.type.typeName.text;
       const stubName: string = provider + 'Stub';
       this.addImport(findProviderPath(this.sourceFile, provider), provider)
-      this.addImport(findRelativeStubPath(stubName), stubName);
+      const stubPath: string = findRelativeStubPath(stubName);
+      if (stubPath) {
+        this.addImport(stubPath, stubName);
+      }
     });
   }
 
