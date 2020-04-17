@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import ts, { ImportSpecifier, NamedImports, StringLiteral, SourceFile } from 'typescript';
 
+// Need to take into account different file extensions
 export function removePathExtension(path: string): string {
     return path.slice(0, -3);
 }
@@ -27,6 +28,7 @@ export function findProviderPath(sourceFile: SourceFile, provider: string): stri
 }
 
 export function searchFileSystem(stubName: string, currentPath: string): string {
+    // Will I need to add more exluded directories? Which ones?
     const excludedDirectories = {
         node_modules: true,
         dist: true,

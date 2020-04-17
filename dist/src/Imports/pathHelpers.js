@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const typescript_1 = __importDefault(require("typescript"));
+// Need to take into account different file extensions
 function removePathExtension(path) {
     return path.slice(0, -3);
 }
@@ -31,6 +32,7 @@ function findProviderPath(sourceFile, provider) {
 }
 exports.findProviderPath = findProviderPath;
 function searchFileSystem(stubName, currentPath) {
+    // Will I need to add more exluded directories? Which ones?
     const excludedDirectories = {
         node_modules: true,
         dist: true,

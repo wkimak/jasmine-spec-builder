@@ -28,7 +28,7 @@ const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
 })
     .help('h')
     .alias('h', 'help').argv;
-const specFileName = terminal.file.split('.').slice(0, -1).join('.') + '.spec.ts';
+const specFileName = `${terminal.file.split('.').slice(0, -1).join('.')}.spec.ts`;
 const specPath = `${process.cwd()}/${specFileName}`;
 if (!fs_1.default.existsSync(specPath)) {
     const sourceFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);

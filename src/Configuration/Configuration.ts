@@ -25,6 +25,10 @@ class Configuration {
       let stubName: string;
       if (this.useMasterServiceStub) {
         stubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
+        // generating stubs and imports are disconnected. 
+        // I am also calling findRelativeStubPath('MasterServiceStub') in Imports.ts.
+        // Can I centralize these calls and logic to help performance?
+        // Also, it makes sense for this logic and Imports.ts logic to be coupled?
         if (findRelativeStubPath('MasterServiceStub') && findRelativeStubPath(provider + 'Stub')) {
           stubs.push({ provider, class: stubName });
         }
@@ -56,6 +60,7 @@ class Configuration {
     const master: ExpressionStatement = ts.createExpressionStatement(ts.createBinary(masterServiceStub, ts.createToken(ts.SyntaxKind.EqualsToken), ts.createNew(MasterServiceStub, undefined, undefined)));
     const statements: ExpressionStatement[] = this.useMasterServiceStub && findRelativeStubPath('MasterServiceStub') ? [master, testBed] : [testBed];
     const expression = ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [getArrowFn(statements)])]));
+    // I am calling findRelativeStubPath with same param multiple times. Only need to make this call once!
     return this.useMasterServiceStub && findRelativeStubPath('MasterServiceStub') ? [this.getMasterServiceInit(), expression] : [expression];
   }
 }

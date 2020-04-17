@@ -25,8 +25,7 @@ const terminal = argv.usage('Usage: $0 <command> [options]')
   .help('h')
   .alias('h', 'help').argv;
 
-
-const specFileName: string = terminal.file.split('.').slice(0, -1).join('.') + '.spec.ts';
+const specFileName: string = `${terminal.file.split('.').slice(0, -1).join('.')}.spec.ts`;
 const specPath: string = `${process.cwd()}/${specFileName}`;
 
 if (!fs.existsSync(specPath)) {

@@ -17,10 +17,10 @@ export default class SpecFileBuilder {
     this.classNode = this.findClassNode(sourceFile);
     this.constructorParams = this.findConstructorParams(this.classNode);
     this.imports = new ImportsBuilder(sourceFile, this.classNode, this.constructorParams, useMasterServiceStub).getImportsTemplate();
-    this.describes = new DescribesBuilder(sourceFile).getDescribesTemplate();
     this.configuration = isComponentFile.test(sourceFile.fileName) ?
       new ComponentConfiguration(this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate() :
       new ServiceConfiguration(this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate();
+    this.describes = new DescribesBuilder(sourceFile, this.configuration).getDescribesTemplate();
   }
 
   private findClassNode(sourceFile: SourceFile): ClassDeclaration {
@@ -40,14 +40,6 @@ export default class SpecFileBuilder {
   };
 
   public build(targetFile: SourceFile): SourceFile {
-    this.describes.forEach(childNode => {
-      const body = childNode.expression.arguments[1].body;
-      const isClassDescribe = body.statements.length > 0;
-      if (isClassDescribe) {
-        body.statements = ts.createNodeArray([...this.configuration, ...body.statements]);
-      }
-    });
-
     targetFile.statements = ts.createNodeArray([...this.imports, ...this.describes]);
     return targetFile;
   }

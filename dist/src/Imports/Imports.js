@@ -21,6 +21,7 @@ class ImportsBuilder {
         }
     }
     addImport(path, name) {
+        // Do I need to use an object to store names/paths? Can this be simplified?
         if (!this.importsObj.hasOwnProperty(path)) {
             this.importsObj[path] = [name];
         }

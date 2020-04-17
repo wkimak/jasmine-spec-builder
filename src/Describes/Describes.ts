@@ -3,8 +3,10 @@ import getArrowFn from '../shared/arrowFunction';
 
 class DescribesBuilder {
   sourceFile: SourceFile | ClassDeclaration;
-  constructor(sourceFile: SourceFile) {
+  configuration;
+  constructor(sourceFile: SourceFile, configuration) {
     this.sourceFile = sourceFile;
+    this.configuration = configuration;
   }
 
   private getDescribe(name: string): ExpressionStatement {
@@ -21,7 +23,9 @@ class DescribesBuilder {
       }
 
       if (ts.isClassDeclaration(childNode)) {
-        this.getDescribesTemplate(childNode, describeBody.statements[0].expression.arguments[1].body);
+        const body = describeBody.statements[0].expression.arguments[1].body;
+        body.statements = this.configuration;
+        this.getDescribesTemplate(childNode, body);
       }
     });
     return describeBody.statements;

@@ -6,8 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
 const arrowFunction_1 = __importDefault(require("../shared/arrowFunction"));
 class DescribesBuilder {
-    constructor(sourceFile) {
+    constructor(sourceFile, configuration) {
         this.sourceFile = sourceFile;
+        this.configuration = configuration;
     }
     getDescribe(name) {
         return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(typescript_1.default.createIdentifier('describe'), undefined, [typescript_1.default.createStringLiteral(name), arrowFunction_1.default()]));
@@ -19,7 +20,10 @@ class DescribesBuilder {
                 describeBody.statements = [...describeBody.statements, this.getDescribe(node.name.text)];
             }
             if (typescript_1.default.isClassDeclaration(childNode)) {
-                this.getDescribesTemplate(childNode, describeBody.statements[0].expression.arguments[1].body);
+                const body = describeBody.statements[0].expression.arguments[1].body;
+                body.statements = this.configuration;
+                console.log(body);
+                this.getDescribesTemplate(childNode, body);
             }
         });
         return describeBody.statements;

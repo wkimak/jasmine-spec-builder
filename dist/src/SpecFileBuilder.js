@@ -14,10 +14,10 @@ class SpecFileBuilder {
         this.classNode = this.findClassNode(sourceFile);
         this.constructorParams = this.findConstructorParams(this.classNode);
         this.imports = new Imports_1.default(sourceFile, this.classNode, this.constructorParams, useMasterServiceStub).getImportsTemplate();
-        this.describes = new Describes_1.default(sourceFile).getDescribesTemplate();
         this.configuration = regex_1.isComponentFile.test(sourceFile.fileName) ?
             new ComponentConfiguration_1.default(this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate() :
             new ServiceConfiguration_1.default(this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate();
+        this.describes = new Describes_1.default(sourceFile, this.configuration).getDescribesTemplate();
     }
     findClassNode(sourceFile) {
         for (const childNode of sourceFile.statements) {
@@ -35,13 +35,8 @@ class SpecFileBuilder {
     }
     ;
     build(targetFile) {
-        this.describes.forEach(childNode => {
-            const body = childNode.expression.arguments[1].body;
-            const isClassDescribe = body.statements.length > 0;
-            if (isClassDescribe) {
-                body.statements = typescript_1.default.createNodeArray([...this.configuration, ...body.statements]);
-            }
-        });
+        // This will not work if sourceFile has no statements or if sourceFile contains multiple classes.
+        // I need to insert the configuration into the correct class describe, with or without statements.
         targetFile.statements = typescript_1.default.createNodeArray([...this.imports, ...this.describes]);
         return targetFile;
     }
