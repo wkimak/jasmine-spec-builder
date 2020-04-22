@@ -15,7 +15,7 @@
         "esModuleInterop": true
     },
     "include": [
-        "./src/*.ts", "src/ComponentSpecBuilder.ts", "src/shared/SpecFileBuilder.ts", "src/builders/ServiceSpecBuilder.ts", "src/ComponentSpecBuilder.ts", "src/shared/pathHelpers.ts", "src/shared/configuration.ts", "src/Imports/pathHelpers.ts"
+        "./src/*.ts", "src/ComponentSpecBuilder.ts", "src/shared/SpecFileBuilder.ts", "src/builders/ServiceSpecBuilder.ts", "src/ComponentSpecBuilder.ts", "src/shared/pathHelpers.ts", "src/shared/configuration.ts", "src/Dependencies/pathHelpers.ts", "src/shared/helpers.ts"
     ],
     "exclude": [
         "node_modules",

@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Configuration_1 = __importDefault(require("./Configuration"));
 const typescript_1 = __importDefault(require("typescript"));
 class ComponentConfiguration extends Configuration_1.default {
-    constructor(classNode, constructorParams, useMasterServiceStub) {
-        super(classNode, constructorParams, useMasterServiceStub);
+    constructor(dependencyObj, classNode, constructorParams, useMasterServiceStub) {
+        super(dependencyObj, classNode, constructorParams, useMasterServiceStub);
     }
     getDeclarations() {
         const declarations = typescript_1.default.createIdentifier('declarations');

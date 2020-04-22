@@ -22,7 +22,6 @@ class DescribesBuilder {
             if (typescript_1.default.isClassDeclaration(childNode)) {
                 const body = describeBody.statements[0].expression.arguments[1].body;
                 body.statements = this.configuration;
-                console.log(body);
                 this.getDescribesTemplate(childNode, body);
             }
         });

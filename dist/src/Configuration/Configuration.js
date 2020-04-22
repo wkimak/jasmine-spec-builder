@@ -5,10 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
 const arrowFunction_1 = __importDefault(require("../shared/arrowFunction"));
-const pathHelpers_1 = require("../Imports/pathHelpers");
+const pathHelpers_1 = require("../Dependencies/pathHelpers");
+const helpers_1 = require("../shared/helpers");
 class Configuration {
-    constructor(classNode, constructorParams, useMasterServiceStub) {
+    constructor(dependencyObj, classNode, constructorParams, useMasterServiceStub) {
         this.classNode = classNode;
+        this.dependencyObj = dependencyObj;
         this.constructorParams = constructorParams;
         this.useMasterServiceStub = useMasterServiceStub;
     }
@@ -19,20 +21,15 @@ class Configuration {
         const stubs = [];
         this.constructorParams.forEach((param) => {
             const provider = param.type.typeName.text;
-            let stubName;
+            const stubName = helpers_1.getStubName(provider);
             if (this.useMasterServiceStub) {
-                stubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
-                // generating stubs and imports are disconnected. 
-                // I am also calling findRelativeStubPath('MasterServiceStub') in Imports.ts.
-                // Can I centralize these calls and logic to help performance?
-                // Also, it makes sense for this logic and Imports.ts logic to be coupled?
-                if (pathHelpers_1.findRelativeStubPath('MasterServiceStub') && pathHelpers_1.findRelativeStubPath(provider + 'Stub')) {
-                    stubs.push({ provider, class: stubName });
+                const masterStubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
+                if (this.dependencyObj.names['MasterServiceStub'] && this.dependencyObj.names[stubName]) {
+                    stubs.push({ provider, class: masterStubName });
                 }
             }
             else {
-                stubName = provider + 'Stub';
-                if (pathHelpers_1.findRelativeStubPath(stubName)) {
+                if (this.dependencyObj.names[stubName]) {
                     stubs.push({ provider, class: stubName });
                 }
             }
@@ -56,7 +53,7 @@ class Configuration {
         const statements = this.useMasterServiceStub && pathHelpers_1.findRelativeStubPath('MasterServiceStub') ? [master, testBed] : [testBed];
         const expression = typescript_1.default.createExpressionStatement(typescript_1.default.createCall(beforeEach, undefined, [typescript_1.default.createCall(async, undefined, [arrowFunction_1.default(statements)])]));
         // I am calling findRelativeStubPath with same param multiple times. Only need to make this call once!
-        return this.useMasterServiceStub && pathHelpers_1.findRelativeStubPath('MasterServiceStub') ? [this.getMasterServiceInit(), expression] : [expression];
+        return this.useMasterServiceStub && this.dependencyObj.names['MasterServiceStub'] ? [this.getMasterServiceInit(), expression] : [expression];
     }
 }
 exports.default = Configuration;

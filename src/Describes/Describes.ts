@@ -1,10 +1,10 @@
-import ts, { ClassDeclaration, SourceFile, FunctionDeclaration, ExpressionStatement } from "typescript";
+import ts, { ClassDeclaration, SourceFile, FunctionDeclaration, ExpressionStatement, VariableStatement } from "typescript";
 import getArrowFn from '../shared/arrowFunction';
 
 class DescribesBuilder {
   sourceFile: SourceFile | ClassDeclaration;
-  configuration;
-  constructor(sourceFile: SourceFile, configuration) {
+  configuration: (VariableStatement | ExpressionStatement)[];
+  constructor(sourceFile: SourceFile, configuration: (VariableStatement | ExpressionStatement)[]) {
     this.sourceFile = sourceFile;
     this.configuration = configuration;
   }
@@ -13,8 +13,8 @@ class DescribesBuilder {
     return ts.createExpressionStatement(ts.createCall(ts.createIdentifier('describe'), undefined, [ts.createStringLiteral(name), getArrowFn()]));
   }
 
-  public getDescribesTemplate(sourceFile?: ClassDeclaration, describeBody?);
-  public getDescribesTemplate(sourceFile?: SourceFile, describeBody?);
+  public getDescribesTemplate(sourceFile?: ClassDeclaration, describeBody?): ExpressionStatement[];
+  public getDescribesTemplate(sourceFile?: SourceFile, describeBody?): ExpressionStatement[];
   public getDescribesTemplate(sourceFile = this.sourceFile, describeBody = { statements: [] }) {
     ts.forEachChild(sourceFile, childNode => {
       if (ts.isClassDeclaration(childNode) || ts.isFunctionDeclaration(childNode) || ts.isMethodDeclaration(childNode)) {

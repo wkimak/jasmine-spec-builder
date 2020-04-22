@@ -1,27 +1,31 @@
-import ts, { SourceFile, ImportDeclaration, ClassDeclaration, ParameterDeclaration } from 'typescript';
+import ts, { SourceFile, ImportDeclaration, ClassDeclaration, ParameterDeclaration, VariableStatement, ExpressionStatement } from 'typescript';
 import ImportsBuilder from './Imports/Imports';
 import DescribesBuilder from './Describes/Describes';
 import ComponentConfiguration from './Configuration/ComponentConfiguration';
 import ServiceConfiguration from './Configuration/ServiceConfiguration';
 import { isComponentFile } from './shared/regex';
+import Dependencies from './Dependencies/Dependencies';
+import DependencyObj from './Dependencies/DependencyObj.model';
 
 export default class SpecFileBuilder {
+  dependancyObj: DependencyObj;
   classNode: ClassDeclaration;
   constructorParams: ts.NodeArray<ParameterDeclaration>;
-  useMasterService: boolean;
   imports: ImportDeclaration[];
-  describes;
-  configuration;
+  describes: ExpressionStatement[];
+  configuration: (VariableStatement | ExpressionStatement)[];
 
   constructor(sourceFile: SourceFile, useMasterServiceStub: boolean) {
     this.classNode = this.findClassNode(sourceFile);
     this.constructorParams = this.findConstructorParams(this.classNode);
-    this.imports = new ImportsBuilder(sourceFile, this.classNode, this.constructorParams, useMasterServiceStub).getImportsTemplate();
+    this.dependancyObj = new Dependencies(sourceFile, this.classNode, this.constructorParams, useMasterServiceStub).getDependancyObj();
+    this.imports = new ImportsBuilder().getImportsTemplate(this.dependancyObj);
     this.configuration = isComponentFile.test(sourceFile.fileName) ?
-      new ComponentConfiguration(this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate() :
-      new ServiceConfiguration(this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate();
+      new ComponentConfiguration(this.dependancyObj, this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate() :
+      new ServiceConfiguration(this.dependancyObj, this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate();
     this.describes = new DescribesBuilder(sourceFile, this.configuration).getDescribesTemplate();
   }
+
 
   private findClassNode(sourceFile: SourceFile): ClassDeclaration {
     for (const childNode of sourceFile.statements) {
@@ -44,29 +48,3 @@ export default class SpecFileBuilder {
     return targetFile;
   }
 }
-
-
-
-
-
-  // Differences
-  // Services
-  // Configuration is different:
-  // no Declarations array
-  // Service is listed as a provider
-  // potential to add imports specific to services (FormsModule)
-  // potential to add form field describe blocks
-
-  // resources
-  // Configuration is different:
-  // no Declarations array
-  // Resource is listed as a provider
-  // potential to add imports specific to resources (HttpRequestModule) 
-  // potential to add http request describe blocks based on HTTP verbs 
-
-
-  // Making methods independant:
-  // setSourceFiles must be called first
-  // set sourceFile
-  // set targetFile
-  // buildFile must be called last

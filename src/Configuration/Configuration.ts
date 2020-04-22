@@ -1,15 +1,19 @@
 import { StubModel } from "./StubModel";
-import ts, { Identifier, ExpressionStatement, ObjectLiteralExpression, VariableStatement, ParameterDeclaration, SourceFile, ClassDeclaration } from "typescript";
+import ts, { Identifier, ExpressionStatement, ObjectLiteralExpression, VariableStatement, ParameterDeclaration, ClassDeclaration } from "typescript";
 import getArrowFn from "../shared/arrowFunction";
-import { findRelativeStubPath } from "../Imports/pathHelpers";
+import { findRelativeStubPath } from "../Dependencies/pathHelpers";
+import { getStubName } from "../shared/helpers";
+import DependencyObj from "../Dependencies/DependencyObj.model";
 
 class Configuration {
-  classNode: ClassDeclaration;
   constructorParams: ts.NodeArray<ParameterDeclaration>;
   useMasterServiceStub: boolean;
+  classNode: ClassDeclaration;
+  dependencyObj: DependencyObj;
 
-  constructor(classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
+  constructor(dependencyObj: DependencyObj, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
     this.classNode = classNode;
+    this.dependencyObj = dependencyObj;
     this.constructorParams = constructorParams;
     this.useMasterServiceStub = useMasterServiceStub;
   }
@@ -22,19 +26,15 @@ class Configuration {
     const stubs: StubModel[] = [];
     this.constructorParams.forEach((param: any) => {
       const provider: string = param.type.typeName.text;
-      let stubName: string;
+      const stubName = getStubName(provider);
+
       if (this.useMasterServiceStub) {
-        stubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
-        // generating stubs and imports are disconnected. 
-        // I am also calling findRelativeStubPath('MasterServiceStub') in Imports.ts.
-        // Can I centralize these calls and logic to help performance?
-        // Also, it makes sense for this logic and Imports.ts logic to be coupled?
-        if (findRelativeStubPath('MasterServiceStub') && findRelativeStubPath(provider + 'Stub')) {
-          stubs.push({ provider, class: stubName });
+        const masterStubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
+        if (this.dependencyObj.names['MasterServiceStub'] && this.dependencyObj.names[stubName]) {
+          stubs.push({ provider, class: masterStubName });
         }
       } else {
-        stubName = provider + 'Stub';
-        if (findRelativeStubPath(stubName)) {
+        if (this.dependencyObj.names[stubName]) {
           stubs.push({ provider, class: stubName });
         }
       }
@@ -51,7 +51,7 @@ class Configuration {
     });
   }
 
-  protected getConfiguration(testBed: ExpressionStatement) {
+  protected getConfiguration(testBed: ExpressionStatement): (VariableStatement | ExpressionStatement)[] {
     const beforeEach: Identifier = ts.createIdentifier("beforeEach");
     const async: Identifier = ts.createIdentifier('async');
     const masterServiceStub: Identifier = ts.createIdentifier('masterServiceStub');
@@ -61,7 +61,7 @@ class Configuration {
     const statements: ExpressionStatement[] = this.useMasterServiceStub && findRelativeStubPath('MasterServiceStub') ? [master, testBed] : [testBed];
     const expression = ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [getArrowFn(statements)])]));
     // I am calling findRelativeStubPath with same param multiple times. Only need to make this call once!
-    return this.useMasterServiceStub && findRelativeStubPath('MasterServiceStub') ? [this.getMasterServiceInit(), expression] : [expression];
+    return this.useMasterServiceStub && this.dependencyObj.names['MasterServiceStub'] ? [this.getMasterServiceInit(), expression] : [expression];
   }
 }
 

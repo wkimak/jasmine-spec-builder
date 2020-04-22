@@ -1,11 +1,12 @@
 import ConfigBuilder from "./Configuration";
-import ts, { Identifier, PropertyAssignment, ObjectLiteralExpression, CallExpression, ExpressionStatement, ParameterDeclaration, ClassDeclaration } from "typescript";
+import ts, { Identifier, PropertyAssignment, ObjectLiteralExpression, CallExpression, ExpressionStatement, ParameterDeclaration, ClassDeclaration, VariableStatement } from "typescript";
 import { StubModel } from './StubModel';
+import DependencyObj from "../Dependencies/DependencyObj.model";
 
 class ComponentConfiguration extends ConfigBuilder {
 
-  constructor(classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
-    super(classNode, constructorParams, useMasterServiceStub);
+  constructor(dependencyObj: DependencyObj, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
+    super(dependencyObj, classNode, constructorParams, useMasterServiceStub);
   }
 
   private getDeclarations(): PropertyAssignment {
@@ -35,7 +36,7 @@ class ComponentConfiguration extends ConfigBuilder {
     return ts.createExpressionStatement(ts.createPropertyAccess(testBed, <any>ts.createPropertyAccess(testingModule, <any>ts.createCall(compileComponents, undefined, undefined))));
   }
 
-  public getConfigurationTemplate() {
+  public getConfigurationTemplate(): (VariableStatement | ExpressionStatement)[] {
     const declarations = this.getDeclarations();
     const providers = this.getProviders(this.generateStubs());
     const testingModule = this.getTestingModule(declarations, providers);
