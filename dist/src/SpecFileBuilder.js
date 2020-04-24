@@ -10,32 +10,18 @@ const ComponentConfiguration_1 = __importDefault(require("./Configuration/Compon
 const ServiceConfiguration_1 = __importDefault(require("./Configuration/ServiceConfiguration"));
 const regex_1 = require("./shared/regex");
 const Dependencies_1 = __importDefault(require("./Dependencies/Dependencies"));
+const helpers_1 = require("./shared/helpers");
 class SpecFileBuilder {
     constructor(sourceFile, useMasterServiceStub) {
-        this.classNode = this.findClassNode(sourceFile);
-        this.constructorParams = this.findConstructorParams(this.classNode);
-        this.dependancyObj = new Dependencies_1.default(sourceFile, this.classNode, this.constructorParams, useMasterServiceStub).getDependancyObj();
+        const classNode = helpers_1.findClassNode(sourceFile);
+        const constructorParams = helpers_1.findConstructorParams(classNode);
+        this.dependancyObj = new Dependencies_1.default(sourceFile, classNode, constructorParams, useMasterServiceStub).getDependancyObj();
         this.imports = new Imports_1.default().getImportsTemplate(this.dependancyObj);
         this.configuration = regex_1.isComponentFile.test(sourceFile.fileName) ?
-            new ComponentConfiguration_1.default(this.dependancyObj, this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate() :
-            new ServiceConfiguration_1.default(this.dependancyObj, this.classNode, this.constructorParams, useMasterServiceStub).getConfigurationTemplate();
+            new ComponentConfiguration_1.default(this.dependancyObj, classNode, constructorParams, useMasterServiceStub).getConfigurationTemplate() :
+            new ServiceConfiguration_1.default(this.dependancyObj, classNode, constructorParams, useMasterServiceStub).getConfigurationTemplate();
         this.describes = new Describes_1.default(sourceFile, this.configuration).getDescribesTemplate();
     }
-    findClassNode(sourceFile) {
-        for (const childNode of sourceFile.statements) {
-            if (typescript_1.default.isClassDeclaration(childNode)) {
-                return childNode;
-            }
-        }
-    }
-    findConstructorParams(classNode) {
-        for (const member of classNode.members) {
-            if (typescript_1.default.isConstructorDeclaration(member)) {
-                return member.parameters;
-            }
-        }
-    }
-    ;
     build(targetFile) {
         targetFile.statements = typescript_1.default.createNodeArray([...this.imports, ...this.describes]);
         return targetFile;

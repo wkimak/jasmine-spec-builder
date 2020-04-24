@@ -10,32 +10,50 @@ const fs_1 = __importDefault(require("fs"));
 const prettier_1 = __importDefault(require("prettier"));
 const yargs_1 = __importDefault(require("yargs"));
 const SpecFileBuilder_1 = __importDefault(require("./SpecFileBuilder"));
+const SpecFileUpdate_1 = __importDefault(require("./SpecFileUpdate"));
 const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
     .command('build', 'Build test file')
     .example('$0 build -f app.component.ts', 'build test file for app.component.ts')
+    .command('update', 'Update providers')
+    .example('$0 update -f app.component.ts', 'update providers configuration')
     .option('f', {
     alias: 'file',
     demandOption: true,
     nargs: 1,
     describe: 'Load a File',
-    type: 'string'
+    type: 'string',
+    global: true
 })
     .option('m', {
     alias: 'master',
     demandOption: false,
     nargs: 0,
     describe: 'Use MasterServiceStub',
+    global: true
 })
     .help('h')
     .alias('h', 'help').argv;
+const commandUsed = terminal._[0];
 const specFileName = `${terminal.file.split('.').slice(0, -1).join('.')}.spec.ts`;
 const specPath = `${process.cwd()}/${specFileName}`;
-if (!fs_1.default.existsSync(specPath)) {
-    const sourceFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
-    const targetFile = typescript_1.default.createSourceFile(specFileName, "", typescript_1.default.ScriptTarget.Latest, false);
-    const created = new SpecFileBuilder_1.default(sourceFile, terminal.master).build(targetFile);
-    const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
-    fs_1.default.writeFile(specFileName, prettier_1.default.format(printer.printFile(created), { parser: 'babel' }), (err) => {
+const sourceFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
+const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
+function writeFile(data) {
+    fs_1.default.writeFile(specFileName, prettier_1.default.format(printer.printFile(data), { parser: 'babel' }), (err) => {
         console.error('ERROR', err);
     });
+}
+if (commandUsed === 'build') {
+    if (!fs_1.default.existsSync(specPath)) {
+        const targetFile = typescript_1.default.createSourceFile(specFileName, "", typescript_1.default.ScriptTarget.Latest, false);
+        const created = new SpecFileBuilder_1.default(sourceFile, terminal.master).build(targetFile);
+        writeFile(created);
+    }
+}
+else if (commandUsed === 'update') {
+    if (fs_1.default.existsSync(specPath)) {
+        const targetFile = typescript_1.default.createSourceFile(specFileName, fs_1.default.readFileSync(`${process.cwd()}/${specFileName}`, 'utf8'), typescript_1.default.ScriptTarget.Latest, false);
+        const updated = new SpecFileUpdate_1.default(sourceFile, targetFile, terminal.master);
+        // writeFile(updated);
+    }
 }

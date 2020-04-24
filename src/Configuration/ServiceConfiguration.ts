@@ -7,14 +7,6 @@ class ServiceConfiguration extends ConfigBuilder {
   constructor(dependencyObj: DependencyObj, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
     super(dependencyObj, classNode, constructorParams, useMasterServiceStub);
   }
-  private getProviders(stubs: StubModel[], name: string): PropertyAssignment {
-    const providers: Identifier = ts.createIdentifier('providers');
-    const className: Identifier = ts.createIdentifier(name);
-    const providersArray: ObjectLiteralExpression[] = this.getProviderStubs(stubs);
-    return ts.createPropertyAssignment(providers, ts.createArrayLiteral(
-      [className, ...providersArray]
-    ));
-  }
 
   private getTestingModule(providers: PropertyAssignment): CallExpression {
     const configureTestingModule: Identifier = ts.createIdentifier('configureTestingModule');
@@ -28,8 +20,18 @@ class ServiceConfiguration extends ConfigBuilder {
     return ts.createExpressionStatement(ts.createPropertyAccess(testBed, <any>testingModule));
   }
 
+  public getProviders(): PropertyAssignment {
+    const stubs: StubModel[] = this.generateStubs();
+    const providers: Identifier = ts.createIdentifier('providers');
+    const className: Identifier = ts.createIdentifier(this.classNode.name.text);
+    const providersArray: ObjectLiteralExpression[] = this.getProviderStubs(stubs);
+    return ts.createPropertyAssignment(providers, ts.createArrayLiteral(
+      [className, ...providersArray]
+    ));
+  }
+
   public getConfigurationTemplate(): (VariableStatement | ExpressionStatement)[] {
-    const providers = this.getProviders(this.generateStubs(), this.classNode.name.text);
+    const providers = this.getProviders();
     const testingModule = this.getTestingModule(providers);
     return this.getConfiguration(this.getTestBed(testingModule));
   }
