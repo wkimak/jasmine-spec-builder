@@ -53,7 +53,7 @@ if (commandUsed === 'build') {
 else if (commandUsed === 'update') {
     if (fs_1.default.existsSync(specPath)) {
         const targetFile = typescript_1.default.createSourceFile(specFileName, fs_1.default.readFileSync(`${process.cwd()}/${specFileName}`, 'utf8'), typescript_1.default.ScriptTarget.Latest, false);
-        const updated = new SpecFileUpdate_1.default(sourceFile, targetFile, terminal.master);
-        // writeFile(updated);
+        const updated = new SpecFileUpdate_1.default(sourceFile, terminal.master).update(targetFile);
+        writeFile(updated);
     }
 }

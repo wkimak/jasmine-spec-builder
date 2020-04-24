@@ -15,12 +15,12 @@ class SpecFileBuilder {
     constructor(sourceFile, useMasterServiceStub) {
         const classNode = helpers_1.findClassNode(sourceFile);
         const constructorParams = helpers_1.findConstructorParams(classNode);
-        this.dependancyObj = new Dependencies_1.default(sourceFile, classNode, constructorParams, useMasterServiceStub).getDependancyObj();
-        this.imports = new Imports_1.default().getImportsTemplate(this.dependancyObj);
-        this.configuration = regex_1.isComponentFile.test(sourceFile.fileName) ?
-            new ComponentConfiguration_1.default(this.dependancyObj, classNode, constructorParams, useMasterServiceStub).getConfigurationTemplate() :
-            new ServiceConfiguration_1.default(this.dependancyObj, classNode, constructorParams, useMasterServiceStub).getConfigurationTemplate();
-        this.describes = new Describes_1.default(sourceFile, this.configuration).getDescribesTemplate();
+        const dependancyObj = new Dependencies_1.default(sourceFile, classNode, constructorParams, useMasterServiceStub).getDependancyObj();
+        const configuration = regex_1.isComponentFile.test(sourceFile.fileName) ?
+            new ComponentConfiguration_1.default(dependancyObj, classNode, constructorParams, useMasterServiceStub).getConfigurationTemplate() :
+            new ServiceConfiguration_1.default(dependancyObj, classNode, constructorParams, useMasterServiceStub).getConfigurationTemplate();
+        this.imports = new Imports_1.default().getImportsTemplate(dependancyObj);
+        this.describes = new Describes_1.default(sourceFile, configuration).getDescribesTemplate();
     }
     build(targetFile) {
         targetFile.statements = typescript_1.default.createNodeArray([...this.imports, ...this.describes]);
