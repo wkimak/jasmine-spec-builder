@@ -4,7 +4,7 @@ import ts, { SourceFile, Printer } from 'typescript';
 import fs from 'fs';
 import prettier from 'prettier';
 import argv from 'yargs';
-import SpecFileBuilder from './SpecFileBuilder';
+import SpecFileCreate from './SpecFileCreate';
 import SpecFileUpdate from './SpecFileUpdate';
 
 const terminal = argv.usage('Usage: $0 <command> [options]')
@@ -45,7 +45,7 @@ function writeFile(data: SourceFile) {
 if (commandUsed === 'build') {
   if (!fs.existsSync(specPath)) {
     const targetFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);
-    const created: SourceFile = new SpecFileBuilder(sourceFile, terminal.master).build(targetFile);
+    const created: SourceFile = new SpecFileCreate(sourceFile, terminal.master).build(targetFile);
     writeFile(created);
   }
 } else if (commandUsed === 'update') {

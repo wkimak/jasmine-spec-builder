@@ -1,30 +1,41 @@
-import ts, { SourceFile, ImportDeclaration, ClassDeclaration, ParameterDeclaration, VariableStatement, ExpressionStatement } from 'typescript';
-import ImportsBuilder from './Imports/Imports';
-import DescribesBuilder from './Describes/Describes';
-import ComponentConfiguration from './Configuration/ComponentConfiguration';
-import ServiceConfiguration from './Configuration/ServiceConfiguration';
-import { isComponentFile } from './shared/regex';
-import Dependencies from './Dependencies/Dependencies';
-import DependencyObj from './Dependencies/DependencyObj.model';
-import { findClassNode, findConstructorParams } from './shared/helpers';
+import ts, { SourceFile, ClassDeclaration, ParameterDeclaration, ImportDeclaration } from "typescript";
+import Dependencies from "./Dependencies/Dependencies";
+import ImportsBuilder from "./Imports/Imports";
+import DependencyObj from "./Dependencies/DependencyObj.model";
 
-export default class SpecFileBuilder {
+class SpecFileBuilder {
+  sourceFile: SourceFile;
+  useMasterServiceStub: boolean;
+  classNode: ClassDeclaration;
+  constructorParams: ts.NodeArray<ParameterDeclaration>;
+  dependencyObj: DependencyObj;
   imports: ImportDeclaration[];
-  describes: ExpressionStatement[];
 
   constructor(sourceFile: SourceFile, useMasterServiceStub: boolean) {
-    const classNode: ClassDeclaration = findClassNode(sourceFile);
-    const constructorParams: ts.NodeArray<ParameterDeclaration> = findConstructorParams(classNode);
-    const dependancyObj: DependencyObj = new Dependencies(sourceFile, classNode, constructorParams, useMasterServiceStub).getDependancyObj();
-    const configuration: (VariableStatement | ExpressionStatement)[] = isComponentFile.test(sourceFile.fileName) ?
-      new ComponentConfiguration(dependancyObj, classNode, constructorParams, useMasterServiceStub).getConfigurationTemplate() :
-      new ServiceConfiguration(dependancyObj, classNode, constructorParams, useMasterServiceStub).getConfigurationTemplate();
-    this.imports = new ImportsBuilder().getImportsTemplate(dependancyObj);
-    this.describes = new DescribesBuilder(sourceFile, configuration).getDescribesTemplate();
+    this.sourceFile = sourceFile;
+    this.useMasterServiceStub = useMasterServiceStub;
+    this.classNode = this.findClassNode(sourceFile);
+    this.constructorParams = this.findConstructorParams(this.classNode);
+    this.dependencyObj = new Dependencies(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub).getDependancyObj();
+    this.imports = new ImportsBuilder().getImportsTemplate(this.dependencyObj);
   }
 
-  public build(targetFile: SourceFile): SourceFile {
-    targetFile.statements = ts.createNodeArray([...this.imports, ...this.describes]);
-    return targetFile;
+  private findClassNode(sourceFile: SourceFile): ClassDeclaration {
+    for (const childNode of sourceFile.statements) {
+      if (ts.isClassDeclaration(childNode)) {
+        return childNode;
+      }
+    }
   }
+
+  private findConstructorParams(classNode: ClassDeclaration): ts.NodeArray<ParameterDeclaration> {
+    for (const member of classNode.members) {
+      if (ts.isConstructorDeclaration(member)) {
+        return member.parameters;
+      }
+    }
+  };
 }
+
+
+export default SpecFileBuilder;

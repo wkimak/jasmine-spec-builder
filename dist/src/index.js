@@ -9,7 +9,7 @@ const typescript_1 = __importDefault(require("typescript"));
 const fs_1 = __importDefault(require("fs"));
 const prettier_1 = __importDefault(require("prettier"));
 const yargs_1 = __importDefault(require("yargs"));
-const SpecFileBuilder_1 = __importDefault(require("./SpecFileBuilder"));
+const SpecFileCreate_1 = __importDefault(require("./SpecFileCreate"));
 const SpecFileUpdate_1 = __importDefault(require("./SpecFileUpdate"));
 const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
     .command('build', 'Build test file')
@@ -46,7 +46,7 @@ function writeFile(data) {
 if (commandUsed === 'build') {
     if (!fs_1.default.existsSync(specPath)) {
         const targetFile = typescript_1.default.createSourceFile(specFileName, "", typescript_1.default.ScriptTarget.Latest, false);
-        const created = new SpecFileBuilder_1.default(sourceFile, terminal.master).build(targetFile);
+        const created = new SpecFileCreate_1.default(sourceFile, terminal.master).build(targetFile);
         writeFile(created);
     }
 }
