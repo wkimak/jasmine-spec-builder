@@ -5,29 +5,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Configuration_1 = __importDefault(require("./Configuration"));
 const typescript_1 = __importDefault(require("typescript"));
+const identifiers_1 = require("../shared/identifiers");
 class ComponentConfiguration extends Configuration_1.default {
-    constructor(dependencyObj, classNode, constructorParams, useMasterServiceStub) {
-        super(dependencyObj, classNode, constructorParams, useMasterServiceStub);
+    constructor(classNode, constructorParams, useMasterServiceStub) {
+        super(classNode, constructorParams, useMasterServiceStub);
     }
     getDeclarations() {
-        const declarations = typescript_1.default.createIdentifier('declarations');
         const className = typescript_1.default.createIdentifier(this.classNode.name.text);
-        return typescript_1.default.createPropertyAssignment(declarations, typescript_1.default.createArrayLiteral([className]));
+        return typescript_1.default.createPropertyAssignment(identifiers_1.declarations, typescript_1.default.createArrayLiteral([className]));
     }
     getTestingModule(declarations, providers) {
-        const configureTestingModule = typescript_1.default.createIdentifier('configureTestingModule');
-        return typescript_1.default.createCall(configureTestingModule, undefined, [typescript_1.default.createObjectLiteral([declarations, providers], true)]);
+        return typescript_1.default.createCall(identifiers_1.configureTestingModule, undefined, [typescript_1.default.createObjectLiteral([declarations, providers], true)]);
     }
     getTestBed(testingModule) {
-        const testBed = typescript_1.default.createIdentifier('TestBed');
-        const compileComponents = typescript_1.default.createIdentifier('compileComponents');
-        return typescript_1.default.createExpressionStatement(typescript_1.default.createPropertyAccess(testBed, typescript_1.default.createPropertyAccess(testingModule, typescript_1.default.createCall(compileComponents, undefined, undefined))));
+        return typescript_1.default.createExpressionStatement(typescript_1.default.createPropertyAccess(identifiers_1.testBed, typescript_1.default.createPropertyAccess(testingModule, typescript_1.default.createCall(identifiers_1.compileComponents, undefined, undefined))));
     }
     getProviders() {
         const stubs = this.generateStubs();
-        const providers = typescript_1.default.createIdentifier('providers');
         const providersArray = this.getProviderStubs(stubs);
-        return typescript_1.default.createPropertyAssignment(providers, typescript_1.default.createArrayLiteral(providersArray));
+        return typescript_1.default.createPropertyAssignment(identifiers_1.providers, typescript_1.default.createArrayLiteral(providersArray));
     }
     getConfigurationTemplate() {
         const declarations = this.getDeclarations();

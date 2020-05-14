@@ -4,8 +4,6 @@
   "description": "A tool to generate Angular spec files",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --exec ts-node -- ./src/index.ts",
-    "ts-node": "ts-node ./src/index.ts",
     "build": "tsc"
   },
   "repository": {
@@ -22,15 +20,15 @@
     "tb": "dist/src/index.js"
   },
   "dependencies": {
-    "core-js": "^3.6.4",
+    "core-js": "^3.6.5",
     "prettier": "^1.19.1",
     "ts-simple-ast": "^21.0.4",
-    "yargs": "^15.1.0"
+    "yargs": "^15.3.1"
   },
   "devDependencies": {
     "@types/core-js": "^2.5.3",
-    "@types/node": "^13.11.0",
-    "ts-node": "^8.8.2",
-    "typescript": "3.7.2"
+    "@types/node": "^13.13.5",
+    "ts-node": "^8.10.1",
+    "typescript": "^3.8.3"
   }
 }

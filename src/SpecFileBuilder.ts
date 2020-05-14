@@ -1,23 +1,16 @@
-import ts, { SourceFile, ClassDeclaration, ParameterDeclaration, ImportDeclaration } from "typescript";
-import Dependencies from "./Dependencies/Dependencies";
-import ImportsBuilder from "./Imports/Imports";
-import DependencyObj from "./Dependencies/DependencyObj.model";
+import ts, { SourceFile, ClassDeclaration, ParameterDeclaration } from "typescript";
 
 class SpecFileBuilder {
   sourceFile: SourceFile;
   useMasterServiceStub: boolean;
   classNode: ClassDeclaration;
   constructorParams: ts.NodeArray<ParameterDeclaration>;
-  dependencyObj: DependencyObj;
-  imports: ImportDeclaration[];
 
   constructor(sourceFile: SourceFile, useMasterServiceStub: boolean) {
     this.sourceFile = sourceFile;
     this.useMasterServiceStub = useMasterServiceStub;
     this.classNode = this.findClassNode(sourceFile);
     this.constructorParams = this.findConstructorParams(this.classNode);
-    this.dependencyObj = new Dependencies(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub).getDependancyObj();
-    this.imports = new ImportsBuilder().getImportsTemplate(this.dependencyObj);
   }
 
   private findClassNode(sourceFile: SourceFile): ClassDeclaration {

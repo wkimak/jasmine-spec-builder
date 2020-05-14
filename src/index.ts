@@ -45,13 +45,13 @@ function writeFile(data: SourceFile) {
 if (commandUsed === 'build') {
   if (!fs.existsSync(specPath)) {
     const targetFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);
-    const created: SourceFile = new SpecFileCreate(sourceFile, terminal.master).build(targetFile);
+    const created = new SpecFileCreate(sourceFile, terminal.master).build(targetFile);
     writeFile(created);
   }
 } else if (commandUsed === 'update') {
   if (fs.existsSync(specPath)) {
     const targetFile = ts.createSourceFile(specFileName, fs.readFileSync(`${process.cwd()}/${specFileName}`, 'utf8'), ts.ScriptTarget.Latest, false);
-    const updated: any = new SpecFileUpdate(sourceFile, terminal.master).update(targetFile);
+    const updated = new SpecFileUpdate(sourceFile, terminal.master).update(targetFile);
     writeFile(updated);
   }
 }

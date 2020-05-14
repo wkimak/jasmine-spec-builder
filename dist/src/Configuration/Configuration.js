@@ -4,55 +4,47 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
-const arrowFunction_1 = __importDefault(require("../shared/arrowFunction"));
-const pathHelpers_1 = require("../Dependencies/pathHelpers");
-const helpers_1 = require("../shared/helpers");
+const arrowFunction_js_1 = __importDefault(require("../shared/arrowFunction.js"));
+const helpers_js_1 = require("../shared/helpers.js");
+const identifiers_js_1 = require("../shared/identifiers.js");
 class Configuration {
-    constructor(dependencyObj, classNode, constructorParams, useMasterServiceStub) {
+    constructor(classNode, constructorParams, useMasterServiceStub) {
         this.classNode = classNode;
-        this.dependencyObj = dependencyObj;
         this.constructorParams = constructorParams;
         this.useMasterServiceStub = useMasterServiceStub;
-    }
-    getMasterServiceInit() {
-        return typescript_1.default.createVariableStatement(undefined, typescript_1.default.createVariableDeclarationList([typescript_1.default.createVariableDeclaration(typescript_1.default.createIdentifier('masterServiceStub'), typescript_1.default.createTypeReferenceNode(typescript_1.default.createIdentifier('MasterServiceStub'), undefined))], typescript_1.default.NodeFlags.Let));
     }
     generateStubs() {
         const stubs = [];
         this.constructorParams.forEach((param) => {
             const provider = param.type.typeName.text;
-            const stubName = helpers_1.getStubName(provider);
+            const stubName = helpers_js_1.getStubName(provider);
             if (this.useMasterServiceStub) {
                 const masterStubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
-                if (this.dependencyObj.names['MasterServiceStub'] && this.dependencyObj.names[stubName]) {
-                    stubs.push({ provider, class: masterStubName });
-                }
+                stubs.push({ provider, class: masterStubName });
             }
             else {
-                if (this.dependencyObj.names[stubName]) {
-                    stubs.push({ provider, class: stubName });
-                }
+                stubs.push({ provider, class: stubName });
             }
         });
         return stubs;
     }
     getProviderStubs(stubs) {
-        const provide = typescript_1.default.createIdentifier('provide');
-        const useClass = typescript_1.default.createIdentifier('useClass');
         return stubs.map(stub => {
-            return typescript_1.default.createObjectLiteral([typescript_1.default.createPropertyAssignment(provide, typescript_1.default.createIdentifier(stub.provider)),
-                typescript_1.default.createPropertyAssignment(useClass, typescript_1.default.createIdentifier(stub.class))]);
+            return typescript_1.default.createObjectLiteral([typescript_1.default.createPropertyAssignment(identifiers_js_1.provide, typescript_1.default.createIdentifier(stub.provider)),
+                typescript_1.default.createPropertyAssignment(identifiers_js_1.useClass, typescript_1.default.createIdentifier(stub.class))]);
         });
     }
+    getMasterServiceInit() {
+        const masterInit = typescript_1.default.createAsExpression(typescript_1.default.createNew(identifiers_js_1.MasterServiceStub, undefined, undefined), undefined);
+        return typescript_1.default.createVariableStatement(undefined, typescript_1.default.createVariableDeclarationList([typescript_1.default.createVariableDeclaration(identifiers_js_1.masterServiceStub, undefined, masterInit)], typescript_1.default.NodeFlags.Const));
+    }
+    getStatements(testBed) {
+        return this.useMasterServiceStub ? [this.getMasterServiceInit(), testBed] : [testBed];
+    }
     getConfiguration(testBed) {
-        const beforeEach = typescript_1.default.createIdentifier("beforeEach");
-        const async = typescript_1.default.createIdentifier('async');
-        const masterServiceStub = typescript_1.default.createIdentifier('masterServiceStub');
-        const MasterServiceStub = typescript_1.default.createIdentifier('MasterServiceStub');
-        const master = typescript_1.default.createExpressionStatement(typescript_1.default.createBinary(masterServiceStub, typescript_1.default.createToken(typescript_1.default.SyntaxKind.EqualsToken), typescript_1.default.createNew(MasterServiceStub, undefined, undefined)));
-        const statements = this.useMasterServiceStub && pathHelpers_1.findRelativeStubPath('MasterServiceStub') ? [master, testBed] : [testBed];
-        const expression = typescript_1.default.createExpressionStatement(typescript_1.default.createCall(beforeEach, undefined, [typescript_1.default.createCall(async, undefined, [arrowFunction_1.default(statements)])]));
-        return this.useMasterServiceStub && this.dependencyObj.names['MasterServiceStub'] ? [this.getMasterServiceInit(), expression] : [expression];
+        const statements = this.getStatements(testBed);
+        const expression = typescript_1.default.createExpressionStatement(typescript_1.default.createCall(identifiers_js_1.beforeEach, undefined, [typescript_1.default.createCall(identifiers_js_1.async, undefined, [arrowFunction_js_1.default(statements)])]));
+        return expression;
     }
 }
 exports.default = Configuration;

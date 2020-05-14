@@ -1,22 +1,37 @@
 import ts, { ImportDeclaration } from 'typescript';
-import DependencyObj from '../Dependencies/DependencyObj.model';
+import DependencyObj from '../dependencies/DependencyObj.model';
 
-class ImportsBuilder {
 
-  private getImportDeclaration(dependencyObj: DependencyObj, path: string) {
-    return ts.createImportDeclaration(undefined, undefined, ts.createImportClause(
-      <any>ts.createObjectLiteral(<any>dependencyObj.paths[path].map((x: string) => ts.createIdentifier(x))), undefined), ts.createLiteral(path));
+function getImportDeclaration(path: string, names): ImportDeclaration {
+  const nonDefaultImports = [];
+  let defaultImport;
+  for (const key in names) {
+    if (key !== 'default') {
+      nonDefaultImports.push(ts.createImportSpecifier(undefined, ts.createIdentifier(key)));
+    } else {
+      defaultImport = ts.createIdentifier(names[key]);
+    }
   }
 
-  public getImportsTemplate(dependencyObj: DependencyObj): ImportDeclaration[] {
-    const result = [];
-    for (const path in dependencyObj.paths) {
-      result.push(
-        this.getImportDeclaration(dependencyObj, path)
-      );
-    }
-    return result;
+  return ts.createImportDeclaration(undefined, undefined, getImportClause(defaultImport, nonDefaultImports), ts.createLiteral(path));
+}
+
+function getImportClause(defaultImport, nonDefaultImports) {
+  if (defaultImport && nonDefaultImports.length) {
+    return ts.createImportClause(defaultImport, ts.createNamedImports(nonDefaultImports));
+  } else if (!defaultImport && nonDefaultImports.length) {
+    return ts.createImportClause(undefined, ts.createNamedImports(nonDefaultImports));
+  } else if (defaultImport && !nonDefaultImports.length) {
+    return ts.createImportClause(defaultImport, undefined);
   }
 }
 
-export default ImportsBuilder;
+export default function getImportsTemplate(dependencyObj: DependencyObj): ImportDeclaration[] {
+  const result = [];
+  for (const path in dependencyObj) {
+    result.push(getImportDeclaration(path, dependencyObj[path]));
+  }
+
+  return result;
+}
+

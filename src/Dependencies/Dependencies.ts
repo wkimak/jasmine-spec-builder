@@ -1,76 +1,38 @@
-import ts, { SourceFile, ClassDeclaration, ParameterDeclaration } from 'typescript';
-import { findRelativeStubPath, findProviderPath, removePathExtension } from './pathHelpers';
+import { getProviderDependencies } from './providerDependencies';
+import { getDependencyPathAndExports } from './dependencyHelpers';
 import DependencyObj from './DependencyObj.model';
-import { getStubName } from '../shared/helpers';
+import { getStubFileName, getStubName } from '../shared/helpers';
+import { ClassDeclaration, SourceFile } from 'typescript';
 
-export default class Dependencies {
-  sourceFile: SourceFile;
-  useMasterServiceStub: boolean;
-  constructorParams: ts.NodeArray<ParameterDeclaration>;
-  dependencyObj: DependencyObj;
+let dependencyObj: DependencyObj;
 
-  constructor(sourceFile: SourceFile, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
-    this.sourceFile = sourceFile;
-    this.useMasterServiceStub = useMasterServiceStub;
-    this.constructorParams = constructorParams;
-    this.dependencyObj = {
-      paths: {
-        '@angular/core/testing': ['TestBed', 'async'],
-        [`./${removePathExtension(sourceFile.fileName)}`]: [classNode.name.text]
-      },
-      names: {
-        TestBed: true,
-        async: true,
-        [classNode.name.text]: true
-      }
-    }
+function addDependency(obj) {
+  dependencyObj = { ...dependencyObj, ...obj };
+}
+
+function getDependency(fileName: string, name: string) {
+  const obj = getDependencyPathAndExports(fileName, name);
+  if (obj) {
+    addDependency(obj);
+  }
+};
+
+export default function getDependancyObj(sourceFile: SourceFile, classNode: ClassDeclaration, constructorParams, useMasterServiceStub: boolean): DependencyObj {
+  dependencyObj = {
+    '@angular/core/testing': { TestBed: 'Testbed', async: 'async' }
   }
 
-  private addDependency(name: string, path?: string): void {
-    if (path) {
-      if (!this.dependencyObj.paths.hasOwnProperty(path)) {
-        this.dependencyObj.paths[path] = [name];
-      } else {
-        this.dependencyObj.paths[path].push(name);
-      }
-    }
-    this.dependencyObj.names[name] = true;
-  }
-
-  private buildMasterServiceDependancyObj(): void {
-    const masterStubName: string = 'MasterServiceStub';
-    let stubPath: string = findRelativeStubPath(masterStubName);
-    if (stubPath) {
-      this.addDependency(masterStubName, stubPath);
-    }
-    this.constructorParams.forEach((param: any) => {
+  if (useMasterServiceStub) {
+    const provider = 'MasterService';
+    getDependency(getStubFileName(provider), getStubName(provider));
+  } else {
+    constructorParams.forEach(param => {
       const provider: string = param.type.typeName.text;
-      const stubName: string = getStubName(provider);
-      this.addDependency(provider, findProviderPath(this.sourceFile, provider));
-      if (findRelativeStubPath(stubName)) {
-        this.addDependency(stubName);
-      }
+      getDependency(getStubFileName(provider), getStubName(provider));
     });
   }
 
-  private buildNonMasterServiceDependancyObj(): void {
-    this.constructorParams.forEach((param: any) => {
-      const provider: string = param.type.typeName.text;
-      const stubName: string = getStubName(provider);
-      this.addDependency(provider, findProviderPath(this.sourceFile, provider));
-      const stubPath: string = findRelativeStubPath(stubName);
-      if (stubPath) {
-        this.addDependency(stubName, stubPath);
-      }
-    });
-  }
-
-  public getDependancyObj(): DependencyObj {
-    if (this.useMasterServiceStub) {
-      this.buildMasterServiceDependancyObj();
-    } else {
-      this.buildNonMasterServiceDependancyObj();
-    }
-    return this.dependencyObj;
-  }
+  getDependency(sourceFile.fileName, classNode.name.text);
+  addDependency(getProviderDependencies(constructorParams, sourceFile));
+  return dependencyObj;
 }

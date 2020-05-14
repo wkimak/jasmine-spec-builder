@@ -5,24 +5,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Configuration_1 = __importDefault(require("./Configuration"));
 const typescript_1 = __importDefault(require("typescript"));
+const identifiers_1 = require("../shared/identifiers");
 class ServiceConfiguration extends Configuration_1.default {
-    constructor(dependencyObj, classNode, constructorParams, useMasterServiceStub) {
-        super(dependencyObj, classNode, constructorParams, useMasterServiceStub);
+    constructor(classNode, constructorParams, useMasterServiceStub) {
+        super(classNode, constructorParams, useMasterServiceStub);
     }
     getTestingModule(providers) {
-        const configureTestingModule = typescript_1.default.createIdentifier('configureTestingModule');
-        return typescript_1.default.createCall(configureTestingModule, undefined, [typescript_1.default.createObjectLiteral([providers], true)]);
+        return typescript_1.default.createCall(identifiers_1.configureTestingModule, undefined, [typescript_1.default.createObjectLiteral([providers], true)]);
     }
     getTestBed(testingModule) {
-        const testBed = typescript_1.default.createIdentifier('TestBed');
-        return typescript_1.default.createExpressionStatement(typescript_1.default.createPropertyAccess(testBed, testingModule));
+        return typescript_1.default.createExpressionStatement(typescript_1.default.createPropertyAccess(identifiers_1.testBed, testingModule));
     }
     getProviders() {
         const stubs = this.generateStubs();
-        const providers = typescript_1.default.createIdentifier('providers');
         const className = typescript_1.default.createIdentifier(this.classNode.name.text);
         const providersArray = this.getProviderStubs(stubs);
-        return typescript_1.default.createPropertyAssignment(providers, typescript_1.default.createArrayLiteral([className, ...providersArray]));
+        return typescript_1.default.createPropertyAssignment(identifiers_1.providers, typescript_1.default.createArrayLiteral([className, ...providersArray]));
     }
     getConfigurationTemplate() {
         const providers = this.getProviders();
