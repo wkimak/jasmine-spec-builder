@@ -1,6 +1,6 @@
 import ts, { Statement, ArrowFunction } from "typescript";
 
-export default function getArrowFn(statements: Statement[] = []): ArrowFunction {
+function getArrowFn(statements: Statement[] = []): ArrowFunction {
   return ts.createArrowFunction(
       undefined,
       undefined,
@@ -12,3 +12,5 @@ export default function getArrowFn(statements: Statement[] = []): ArrowFunction 
       ts.createBlock(statements, true)
   );
 }
+
+export default getArrowFn;

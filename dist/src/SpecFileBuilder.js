@@ -5,8 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
 class SpecFileBuilder {
-    constructor(sourceFile, useMasterServiceStub) {
+    constructor(sourceFile, targetFile, useMasterServiceStub) {
         this.sourceFile = sourceFile;
+        this.targetFile = targetFile;
         this.useMasterServiceStub = useMasterServiceStub;
         this.classNode = this.findClassNode(sourceFile);
         this.constructorParams = this.findConstructorParams(this.classNode);

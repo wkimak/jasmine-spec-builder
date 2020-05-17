@@ -8,3 +8,7 @@ function getStubName(provider) {
     return provider + 'Stub';
 }
 exports.getStubName = getStubName;
+function removePathExtension(path) {
+    return path.slice(0, -3);
+}
+exports.removePathExtension = removePathExtension;

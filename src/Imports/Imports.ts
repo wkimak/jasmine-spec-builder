@@ -26,7 +26,7 @@ function getImportClause(defaultImport, nonDefaultImports) {
   }
 }
 
-export default function getImportsTemplate(dependencyObj: DependencyObj): ImportDeclaration[] {
+function getImportsTemplate(dependencyObj: DependencyObj): ImportDeclaration[] {
   const result = [];
   for (const path in dependencyObj) {
     result.push(getImportDeclaration(path, dependencyObj[path]));
@@ -34,4 +34,6 @@ export default function getImportsTemplate(dependencyObj: DependencyObj): Import
 
   return result;
 }
+
+export default getImportsTemplate;
 

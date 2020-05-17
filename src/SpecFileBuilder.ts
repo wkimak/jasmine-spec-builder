@@ -2,12 +2,14 @@ import ts, { SourceFile, ClassDeclaration, ParameterDeclaration } from "typescri
 
 class SpecFileBuilder {
   sourceFile: SourceFile;
+  targetFile: SourceFile;
   useMasterServiceStub: boolean;
   classNode: ClassDeclaration;
   constructorParams: ts.NodeArray<ParameterDeclaration>;
 
-  constructor(sourceFile: SourceFile, useMasterServiceStub: boolean) {
+  constructor(sourceFile: SourceFile, targetFile: SourceFile, useMasterServiceStub: boolean) {
     this.sourceFile = sourceFile;
+    this.targetFile = targetFile;
     this.useMasterServiceStub = useMasterServiceStub;
     this.classNode = this.findClassNode(sourceFile);
     this.constructorParams = this.findConstructorParams(this.classNode);

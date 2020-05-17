@@ -2,17 +2,17 @@ import ts, { ClassDeclaration, SourceFile, FunctionDeclaration, ExpressionStatem
 import getArrowFn from '../shared/arrowFunction';
 import { describe } from '../shared/identifiers';
 
-function getDescribe(name: string): ExpressionStatement {
+function getDescribeTemplate(name: string): ExpressionStatement {
   return ts.createExpressionStatement(ts.createCall(describe, undefined, [ts.createStringLiteral(name), getArrowFn()]));
 }
 
-function getDescribesTemplate(sourceFile: ClassDeclaration, configuration, describeBody?): ExpressionStatement[];
-function getDescribesTemplate(sourceFile: SourceFile, configuration, describeBody?): ExpressionStatement[];
+function getDescribesTemplate(sourceFile: ClassDeclaration, configuration: ExpressionStatement, describeBody?): ExpressionStatement[];
+function getDescribesTemplate(sourceFile: SourceFile, configuration: ExpressionStatement, describeBody?): ExpressionStatement[];
 function getDescribesTemplate(sourceFile, configuration, describeBody = { statements: [] }) {
   ts.forEachChild(sourceFile, childNode => {
     if (ts.isClassDeclaration(childNode) || ts.isFunctionDeclaration(childNode) || ts.isMethodDeclaration(childNode)) {
       const node = <ClassDeclaration | FunctionDeclaration>childNode;
-      describeBody.statements = [...describeBody.statements, getDescribe(node.name.text)];
+      describeBody.statements = [...describeBody.statements, getDescribeTemplate(node.name.text)];
     }
 
     if (ts.isClassDeclaration(childNode)) {

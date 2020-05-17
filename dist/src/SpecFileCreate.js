@@ -12,18 +12,18 @@ const dependencies_1 = __importDefault(require("./dependencies/dependencies"));
 const imports_1 = __importDefault(require("./imports/imports"));
 const describes_1 = __importDefault(require("./describes/describes"));
 class SpecFileCreate extends SpecFileBuilder_1.default {
-    constructor(sourceFile, useMasterServiceStub) {
-        super(sourceFile, useMasterServiceStub);
+    constructor(sourceFile, targetFile, useMasterServiceStub) {
+        super(sourceFile, targetFile, useMasterServiceStub);
     }
-    build(targetFile) {
+    build() {
         const dependencyObj = dependencies_1.default(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
         const imports = imports_1.default(dependencyObj);
         const configuration = regex_1.isComponentFile.test(this.sourceFile.fileName) ?
             new ComponentConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate() :
             new ServiceConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate();
         const describes = describes_1.default(this.sourceFile, configuration);
-        targetFile.statements = typescript_1.default.createNodeArray([...imports, ...describes]);
-        return targetFile;
+        this.targetFile.statements = typescript_1.default.createNodeArray([...imports, ...describes]);
+        return this.targetFile;
     }
 }
 exports.default = SpecFileCreate;

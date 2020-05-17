@@ -12,63 +12,54 @@ const Configuration_1 = __importDefault(require("./Configuration/Configuration")
 const dependencies_1 = __importDefault(require("./dependencies/dependencies"));
 const imports_1 = __importDefault(require("./imports/imports"));
 class SpecFileUpdate extends SpecFileBuilder_1.default {
-    constructor(sourceFile, useMasterServiceStub) {
-        super(sourceFile, useMasterServiceStub);
+    constructor(sourceFile, targetFile, useMasterServiceStub) {
+        super(sourceFile, targetFile, useMasterServiceStub);
+        this.recentProviderImportNames = { MasterServiceStub: true };
     }
     removeImportDeclarations(ctx) {
         const callback = (node) => {
-            if (typescript_1.default.isImportDeclaration(node) && this.dependencyObj.hasOwnProperty(node.moduleSpecifier.text)) {
-                return null;
-            }
-        };
-        return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));
-    }
-    removeImportDeclarationsByName(ctx) {
-        const callback = (node) => {
             if (typescript_1.default.isImportDeclaration(node)) {
-                let isProviderImport = false;
                 if (node.importClause.namedBindings) {
-                    node.importClause.namedBindings.elements.forEach(i => {
-                        if (this.currentProviders.hasOwnProperty(i.name.escapedText)) {
-                            isProviderImport = true;
+                    for (const binding of node.importClause.namedBindings.elements) {
+                        if (this.recentProviderImportNames.hasOwnProperty(binding.name.escapedText)) {
+                            return null;
                         }
-                    });
-                }
-                else {
-                    if (this.currentProviders.hasOwnProperty(node.importClause.name.text)) {
-                        return null;
                     }
                 }
-                if (isProviderImport) {
+                else if (this.recentProviderImportNames.hasOwnProperty(node.importClause.name.text)) {
+                    return null;
+                }
+                if (this.dependencyObj.hasOwnProperty(node.moduleSpecifier.text)) {
                     return null;
                 }
             }
         };
         return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));
     }
-    findProviders(node) {
-        if (typescript_1.default.isPropertyAssignment(node) && node.name.text === 'providers') {
-            const names = { MasterServiceStub: true };
+    isProvidersArray(node) {
+        return typescript_1.default.isPropertyAssignment(node) && node.name.text === 'providers';
+    }
+    setRecentProviderImportNames(node) {
+        if (this.isProvidersArray(node)) {
             node.initializer.elements.forEach(child => {
                 if (child.hasOwnProperty('properties')) {
                     child.properties.forEach(prop => {
-                        names[prop.initializer.text] = true;
+                        this.recentProviderImportNames[prop.initializer.text] = true;
                     });
                 }
                 else {
-                    names[child.escapedText] = true;
+                    this.recentProviderImportNames[child.escapedText] = true;
                 }
             });
-            return names;
         }
-        return typescript_1.default.forEachChild(node, this.findProviders.bind(this));
+        return typescript_1.default.forEachChild(node, this.setRecentProviderImportNames.bind(this));
     }
     updateProviders(ctx) {
         const callback = (node) => {
-            if (typescript_1.default.isPropertyAssignment(node) && node.name.text === 'providers') {
+            if (this.isProvidersArray(node)) {
                 const providers = regex_1.isComponentFile.test(this.sourceFile.fileName) ?
-                    new ComponentConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getProviders() :
-                    new ServiceConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getProviders();
+                    new ComponentConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate() :
+                    new ServiceConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate();
                 return providers;
             }
         };
@@ -81,10 +72,9 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
                     return null;
                 }
             }
-            console.log('NODE', node);
             if (typescript_1.default.isExpressionStatement(node) && node.getFirstToken(this.targetFile).escapedText === 'TestBed') {
                 const updatedProviders = typescript_1.default.transform(node, [this.updateProviders.bind(this)]).transformed[0];
-                return new Configuration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getStatements(updatedProviders);
+                return new Configuration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getTestBedStatements(updatedProviders);
             }
         };
         return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));
@@ -99,13 +89,11 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
         };
         return visitor;
     }
-    update(targetFile) {
-        this.targetFile = targetFile;
+    update() {
         this.dependencyObj = dependencies_1.default(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
-        this.currentProviders = this.findProviders(targetFile);
-        const rootNode = typescript_1.default.transform(targetFile, [
+        this.setRecentProviderImportNames(this.targetFile);
+        const rootNode = typescript_1.default.transform(this.targetFile, [
             this.removeImportDeclarations.bind(this),
-            this.removeImportDeclarationsByName.bind(this),
             this.updateTestBed.bind(this)
         ]).transformed[0];
         rootNode.statements = typescript_1.default.createNodeArray([...imports_1.default(this.dependencyObj), ...rootNode.statements]);

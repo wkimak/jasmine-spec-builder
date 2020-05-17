@@ -1,8 +1,9 @@
-import ts, { NamedImportBindings, ImportSpecifier } from "typescript";
+import ts, { NamedImportBindings, ImportSpecifier, ParameterDeclaration, SourceFile, Identifier, ImportClause, ImportDeclaration } from "typescript";
+import DependencyObj from "./DependencyObj.model";
 
-let providerObj;
+let providerObj: DependencyObj;
 
-export function getProviderDependencies(constructorParams, sourceFile) {
+function getProviderDependencies(constructorParams: ts.NodeArray<ParameterDeclaration>, sourceFile: SourceFile): DependencyObj {
   providerObj = {};
   constructorParams.forEach((param: any) => {
     const provider: string = param.type.typeName.text;
@@ -11,27 +12,28 @@ export function getProviderDependencies(constructorParams, sourceFile) {
   return providerObj;
 }
 
-function findProviderDependencies(provider: string, sourceFile): any {
+function findProviderDependencies(provider: string, sourceFile: SourceFile): void {
   for (const childNode of sourceFile.statements) {
     if (ts.isImportDeclaration(childNode)) {
-      const namedBindings: NamedImportBindings = childNode.importClause.namedBindings;
-      const defaultImport = childNode.importClause.name;
+      const importClause: ImportClause = childNode.importClause;
+      const namedBindings: NamedImportBindings = importClause.namedBindings;
+      const defaultImport: Identifier = importClause.name;
+      const providerPath: string = (<any>childNode.moduleSpecifier).text;
 
       if (namedBindings) {
-        setNamedBindings(namedBindings, provider, childNode);
+        setNamedBindings(namedBindings, provider, providerPath);
       }
 
       if (defaultImport) {
-        setDefaultImport(defaultImport, provider, childNode);
+        setDefaultImport(defaultImport, provider, providerPath);
       }
     }
   }
 }
 
-function setNamedBindings(namedBindings, provider, childNode) {
+function setNamedBindings(namedBindings: NamedImportBindings, provider: string, providerPath: string): void {
   const imports: ts.NodeArray<ImportSpecifier> = (<any>namedBindings).elements;
   for (const node of imports) {
-    const providerPath = (<any>childNode.moduleSpecifier).text;
     if (node.name.text === provider && !providerObj[providerPath]) {
       providerObj[providerPath] = { [provider]: provider };
     } else if (node.name.text === provider) {
@@ -40,11 +42,12 @@ function setNamedBindings(namedBindings, provider, childNode) {
   }
 }
 
-function setDefaultImport(defaultImport, provider, childNode) {
-  const providerPath = (<any>childNode.moduleSpecifier).text;
+function setDefaultImport(defaultImport: Identifier, provider: string, providerPath: string): void {
   if (provider === defaultImport.text && !providerObj[providerPath]) {
     providerObj[providerPath] = { default: provider };
   } else if (provider === defaultImport.text) {
     providerObj[providerPath] = { default: provider, ...providerObj[providerPath] };
   }
 }
+
+export default getProviderDependencies;

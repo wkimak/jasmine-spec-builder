@@ -1,3 +1,5 @@
-export default interface DependencyObj {
+interface DependencyObj {
   [path: string]: { [name: string]: string };
 }
+
+export default DependencyObj;

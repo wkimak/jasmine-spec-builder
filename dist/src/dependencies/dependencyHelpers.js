@@ -6,26 +6,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const regex_1 = require("../shared/regex");
-function getDependencyPathAndExports(fileName, name) {
+const helpers_1 = require("../shared/helpers");
+function getDependencyPathAndExport(fileName, stubName) {
     const currentDirectory = process.cwd();
     const dependencyPath = searchFileSystem(fileName, path_1.default.dirname(currentDirectory));
     if (dependencyPath) {
-        const content = fs_1.default.readFileSync(dependencyPath + '.ts', 'utf8');
-        let relativePath = path_1.default.relative(currentDirectory, dependencyPath);
+        const content = fs_1.default.readFileSync(dependencyPath, 'utf8');
+        let relativePath = path_1.default.relative(currentDirectory, helpers_1.removePathExtension(dependencyPath));
         if (currentDirectory === path_1.default.dirname(dependencyPath)) {
             relativePath = `./${relativePath}`;
         }
         if (!regex_1.isExportDefault.test(content)) {
-            return { [relativePath]: { [name]: name } };
+            return { [relativePath]: { [stubName]: stubName } };
         }
         else {
-            return { [relativePath]: { default: name } };
+            return { [relativePath]: { default: stubName } };
         }
     }
 }
-exports.getDependencyPathAndExports = getDependencyPathAndExports;
 function searchFileSystem(stubName, currentPath) {
-    // Will I need to add more exluded directories? Which ones?
     const excludedDirectories = {
         node_modules: true,
         dist: true,
@@ -39,7 +38,7 @@ function searchFileSystem(stubName, currentPath) {
                 const currentFile = currentPath + '/' + files[file];
                 const stats = fs_1.default.statSync(currentFile);
                 if (stats.isFile() && path_1.default.basename(currentFile).toLowerCase() === stubName.toLowerCase()) {
-                    fileFound = removePathExtension(currentFile);
+                    fileFound = currentFile;
                 }
                 else if (stats.isDirectory() && !excludedDirectories.hasOwnProperty(path_1.default.basename(currentPath))) {
                     inner(currentFile);
@@ -50,6 +49,4 @@ function searchFileSystem(stubName, currentPath) {
     inner(currentPath);
     return fileFound;
 }
-function removePathExtension(path) {
-    return path.slice(0, -3);
-}
+exports.default = getDependencyPathAndExport;

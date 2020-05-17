@@ -37,21 +37,21 @@ const sourceFile = ts.createSourceFile(terminal.file, fs.readFileSync(`${process
 const printer: Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
 function writeFile(data: SourceFile) {
-    fs.writeFile(specFileName, prettier.format(printer.printFile(data), { parser: 'babel' }), (err) => {
-      console.error('ERROR', err);
-    });
+  fs.writeFile(specFileName, prettier.format(printer.printFile(data), { parser: 'babel' }), (err) => {
+    console.error('ERROR', err);
+  });
 }
 
 if (commandUsed === 'build') {
   if (!fs.existsSync(specPath)) {
     const targetFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);
-    const created = new SpecFileCreate(sourceFile, terminal.master).build(targetFile);
+    const created = new SpecFileCreate(sourceFile, targetFile, terminal.master).build();
     writeFile(created);
   }
 } else if (commandUsed === 'update') {
   if (fs.existsSync(specPath)) {
     const targetFile = ts.createSourceFile(specFileName, fs.readFileSync(`${process.cwd()}/${specFileName}`, 'utf8'), ts.ScriptTarget.Latest, false);
-    const updated = new SpecFileUpdate(sourceFile, terminal.master).update(targetFile);
+    const updated = new SpecFileUpdate(sourceFile, targetFile, terminal.master).update();
     writeFile(updated);
   }
 }

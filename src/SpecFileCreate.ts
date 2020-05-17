@@ -8,21 +8,20 @@ import getImportsTemplate from './imports/imports';
 import getDescribesTemplate from './describes/describes';
 
 class SpecFileCreate extends SpecFileBuilder {
-  constructor(sourceFile: SourceFile, useMasterServiceStub: boolean) {
-    super(sourceFile, useMasterServiceStub);
+  constructor(sourceFile: SourceFile, targetFile: SourceFile, useMasterServiceStub: boolean) {
+    super(sourceFile, targetFile, useMasterServiceStub);
   }
 
-  public build(targetFile: SourceFile): SourceFile {
+  public build(): SourceFile {
     const dependencyObj = getDependancyObj(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
     const imports = getImportsTemplate(dependencyObj);
     const configuration: ExpressionStatement = isComponentFile.test(this.sourceFile.fileName) ?
       new ComponentConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate() :
       new ServiceConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate();
-
     const describes = getDescribesTemplate(this.sourceFile, configuration);
 
-    targetFile.statements = ts.createNodeArray([...imports, ...describes]);
-    return targetFile;
+    this.targetFile.statements = ts.createNodeArray([...imports, ...describes]);
+    return this.targetFile;
   }
 }
 

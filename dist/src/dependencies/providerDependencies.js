@@ -13,25 +13,25 @@ function getProviderDependencies(constructorParams, sourceFile) {
     });
     return providerObj;
 }
-exports.getProviderDependencies = getProviderDependencies;
 function findProviderDependencies(provider, sourceFile) {
     for (const childNode of sourceFile.statements) {
         if (typescript_1.default.isImportDeclaration(childNode)) {
-            const namedBindings = childNode.importClause.namedBindings;
-            const defaultImport = childNode.importClause.name;
+            const importClause = childNode.importClause;
+            const namedBindings = importClause.namedBindings;
+            const defaultImport = importClause.name;
+            const providerPath = childNode.moduleSpecifier.text;
             if (namedBindings) {
-                setNamedBindings(namedBindings, provider, childNode);
+                setNamedBindings(namedBindings, provider, providerPath);
             }
             if (defaultImport) {
-                setDefaultImport(defaultImport, provider, childNode);
+                setDefaultImport(defaultImport, provider, providerPath);
             }
         }
     }
 }
-function setNamedBindings(namedBindings, provider, childNode) {
+function setNamedBindings(namedBindings, provider, providerPath) {
     const imports = namedBindings.elements;
     for (const node of imports) {
-        const providerPath = childNode.moduleSpecifier.text;
         if (node.name.text === provider && !providerObj[providerPath]) {
             providerObj[providerPath] = { [provider]: provider };
         }
@@ -40,8 +40,7 @@ function setNamedBindings(namedBindings, provider, childNode) {
         }
     }
 }
-function setDefaultImport(defaultImport, provider, childNode) {
-    const providerPath = childNode.moduleSpecifier.text;
+function setDefaultImport(defaultImport, provider, providerPath) {
     if (provider === defaultImport.text && !providerObj[providerPath]) {
         providerObj[providerPath] = { default: provider };
     }
@@ -49,3 +48,4 @@ function setDefaultImport(defaultImport, provider, childNode) {
         providerObj[providerPath] = Object.assign({ default: provider }, providerObj[providerPath]);
     }
 }
+exports.default = getProviderDependencies;

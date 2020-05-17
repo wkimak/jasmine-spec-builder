@@ -1,34 +1,36 @@
-import { getProviderDependencies } from './providerDependencies';
-import { getDependencyPathAndExports } from './dependencyHelpers';
+import getProviderDependencies from './providerDependencies';
+import getStubPathAndExport from './stubDependencies';
 import DependencyObj from './DependencyObj.model';
 import { getStubFileName, getStubName } from '../shared/helpers';
-import { ClassDeclaration, SourceFile } from 'typescript';
+import ts, { ClassDeclaration, SourceFile, ParameterDeclaration } from 'typescript';
 
 let dependencyObj: DependencyObj;
 
-function addDependency(obj) {
+function addDependency(obj: DependencyObj): void {
   dependencyObj = { ...dependencyObj, ...obj };
 }
 
-function getDependency(fileName: string, name: string) {
-  const obj = getDependencyPathAndExports(fileName, name);
+function getDependency(fileName: string, stubName: string): void {
+  const obj: DependencyObj = getStubPathAndExport(fileName, stubName);
   if (obj) {
     addDependency(obj);
   }
 };
 
-export default function getDependancyObj(sourceFile: SourceFile, classNode: ClassDeclaration, constructorParams, useMasterServiceStub: boolean): DependencyObj {
+function getDependancyObj(sourceFile: SourceFile, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean): DependencyObj {
   dependencyObj = {
-    '@angular/core/testing': { TestBed: 'Testbed', async: 'async' }
+    '@angular/core/testing': { TestBed: 'TestBed', async: 'async' }
   }
 
+  let provider: string;
   if (useMasterServiceStub) {
-    const provider = 'MasterService';
+    provider = 'MasterService';
     getDependency(getStubFileName(provider), getStubName(provider));
   } else {
-    constructorParams.forEach(param => {
-      const provider: string = param.type.typeName.text;
+    constructorParams.forEach((param: any) => {
+      provider = param.type.typeName.text;
       getDependency(getStubFileName(provider), getStubName(provider));
+      
     });
   }
 
@@ -36,3 +38,5 @@ export default function getDependancyObj(sourceFile: SourceFile, classNode: Clas
   addDependency(getProviderDependencies(constructorParams, sourceFile));
   return dependencyObj;
 }
+
+export default getDependancyObj;

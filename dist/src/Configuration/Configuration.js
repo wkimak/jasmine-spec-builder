@@ -14,37 +14,34 @@ class Configuration {
         this.useMasterServiceStub = useMasterServiceStub;
     }
     generateStubs() {
-        const stubs = [];
+        const stubTemplates = [];
         this.constructorParams.forEach((param) => {
-            const provider = param.type.typeName.text;
-            const stubName = helpers_js_1.getStubName(provider);
+            const providerName = param.type.typeName.text;
+            let stubName = helpers_js_1.getStubName(providerName);
             if (this.useMasterServiceStub) {
-                const masterStubName = `masterServiceStub.${provider.slice(0, 1).toLowerCase() + provider.slice(1)}Stub`;
-                stubs.push({ provider, class: masterStubName });
+                stubName = helpers_js_1.getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
             }
-            else {
-                stubs.push({ provider, class: stubName });
-            }
+            stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
         });
-        return stubs;
+        return stubTemplates;
     }
-    getProviderStubs(stubs) {
-        return stubs.map(stub => {
-            return typescript_1.default.createObjectLiteral([typescript_1.default.createPropertyAssignment(identifiers_js_1.provide, typescript_1.default.createIdentifier(stub.provider)),
-                typescript_1.default.createPropertyAssignment(identifiers_js_1.useClass, typescript_1.default.createIdentifier(stub.class))]);
-        });
+    getProviderStubTemplate(providerName, stubName) {
+        return typescript_1.default.createObjectLiteral([typescript_1.default.createPropertyAssignment(identifiers_js_1.provide, typescript_1.default.createIdentifier(providerName)),
+            typescript_1.default.createPropertyAssignment(identifiers_js_1.useClass, typescript_1.default.createIdentifier(stubName))]);
     }
-    getMasterServiceInit() {
+    getTestingModuleTemplate(keyValues) {
+        return typescript_1.default.createCall(identifiers_js_1.configureTestingModule, undefined, [typescript_1.default.createObjectLiteral(keyValues, true)]);
+    }
+    getMasterServiceInitTemplate() {
         const masterInit = typescript_1.default.createAsExpression(typescript_1.default.createNew(identifiers_js_1.MasterServiceStub, undefined, undefined), undefined);
         return typescript_1.default.createVariableStatement(undefined, typescript_1.default.createVariableDeclarationList([typescript_1.default.createVariableDeclaration(identifiers_js_1.masterServiceStub, undefined, masterInit)], typescript_1.default.NodeFlags.Const));
     }
-    getStatements(testBed) {
-        return this.useMasterServiceStub ? [this.getMasterServiceInit(), testBed] : [testBed];
+    getTestBedStatements(testBed) {
+        return this.useMasterServiceStub ? [this.getMasterServiceInitTemplate(), testBed] : [testBed];
     }
     getConfiguration(testBed) {
-        const statements = this.getStatements(testBed);
-        const expression = typescript_1.default.createExpressionStatement(typescript_1.default.createCall(identifiers_js_1.beforeEach, undefined, [typescript_1.default.createCall(identifiers_js_1.async, undefined, [arrowFunction_js_1.default(statements)])]));
-        return expression;
+        const testBedStatements = this.getTestBedStatements(testBed);
+        return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(identifiers_js_1.beforeEach, undefined, [typescript_1.default.createCall(identifiers_js_1.async, undefined, [arrowFunction_js_1.default(testBedStatements)])]));
     }
 }
 exports.default = Configuration;

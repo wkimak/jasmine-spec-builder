@@ -10,22 +10,17 @@ class ServiceConfiguration extends Configuration_1.default {
     constructor(classNode, constructorParams, useMasterServiceStub) {
         super(classNode, constructorParams, useMasterServiceStub);
     }
-    getTestingModule(providers) {
-        return typescript_1.default.createCall(identifiers_1.configureTestingModule, undefined, [typescript_1.default.createObjectLiteral([providers], true)]);
-    }
-    getTestBed(testingModule) {
+    getTestBedTemplate(testingModule) {
         return typescript_1.default.createExpressionStatement(typescript_1.default.createPropertyAccess(identifiers_1.testBed, testingModule));
     }
-    getProviders() {
-        const stubs = this.generateStubs();
+    getProvidersTemplate() {
         const className = typescript_1.default.createIdentifier(this.classNode.name.text);
-        const providersArray = this.getProviderStubs(stubs);
+        const providersArray = this.generateStubs();
         return typescript_1.default.createPropertyAssignment(identifiers_1.providers, typescript_1.default.createArrayLiteral([className, ...providersArray]));
     }
     getConfigurationTemplate() {
-        const providers = this.getProviders();
-        const testingModule = this.getTestingModule(providers);
-        return this.getConfiguration(this.getTestBed(testingModule));
+        const testingModule = this.getTestingModuleTemplate([this.getProvidersTemplate()]);
+        return this.getConfiguration(this.getTestBedTemplate(testingModule));
     }
 }
 exports.default = ServiceConfiguration;
