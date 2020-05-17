@@ -39,6 +39,20 @@ const specPath = `${process.cwd()}/${specFileName}`;
 const sourceFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
 const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
 function writeFile(data) {
+    // open the file in writing mode, adding a callback function where we do the actual writing
+    // fs.open(specFileName, 'w', function(err, fd) {
+    //   if (err) {
+    //       throw 'could not open file: ' + err;
+    //   }
+    //   // write the contents of the buffer, from position 0 to the end, to the file descriptor returned in opening our file
+    //   const buffer = new Buffer(prettier.format(printer.printFile(data), { parser: 'babel' }));
+    //   fs.write(fd, buffer, 0, buffer.length, null, function(err) {
+    //       if (err) throw 'error writing file: ' + err;
+    //       fs.close(fd, function() {
+    //           console.log('wrote the file successfully');
+    //       });
+    //   });
+    // });
     fs_1.default.writeFile(specFileName, prettier_1.default.format(printer.printFile(data), { parser: 'babel' }), (err) => {
         console.error('ERROR', err);
     });

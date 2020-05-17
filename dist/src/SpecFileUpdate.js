@@ -50,9 +50,14 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
         if (typescript_1.default.isPropertyAssignment(node) && node.name.text === 'providers') {
             const names = { MasterServiceStub: true };
             node.initializer.elements.forEach(child => {
-                child.properties.forEach(prop => {
-                    names[prop.initializer.text] = true;
-                });
+                if (child.hasOwnProperty('properties')) {
+                    child.properties.forEach(prop => {
+                        names[prop.initializer.text] = true;
+                    });
+                }
+                else {
+                    names[child.escapedText] = true;
+                }
             });
             return names;
         }
@@ -76,7 +81,8 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
                     return null;
                 }
             }
-            if (typescript_1.default.isExpressionStatement(node) && node.getFirstToken(this.sourceFile).escapedText === 'TestBed') {
+            console.log('NODE', node);
+            if (typescript_1.default.isExpressionStatement(node) && node.getFirstToken(this.targetFile).escapedText === 'TestBed') {
                 const updatedProviders = typescript_1.default.transform(node, [this.updateProviders.bind(this)]).transformed[0];
                 return new Configuration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getStatements(updatedProviders);
             }
@@ -94,6 +100,7 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
         return visitor;
     }
     update(targetFile) {
+        this.targetFile = targetFile;
         this.dependencyObj = dependencies_1.default(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
         this.currentProviders = this.findProviders(targetFile);
         const rootNode = typescript_1.default.transform(targetFile, [

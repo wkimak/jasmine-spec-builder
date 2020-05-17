@@ -37,9 +37,9 @@ const sourceFile = ts.createSourceFile(terminal.file, fs.readFileSync(`${process
 const printer: Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
 function writeFile(data: SourceFile) {
-  fs.writeFile(specFileName, prettier.format(printer.printFile(data), { parser: 'babel' }), (err) => {
-    console.error('ERROR', err);
-  });
+    fs.writeFile(specFileName, prettier.format(printer.printFile(data), { parser: 'babel' }), (err) => {
+      console.error('ERROR', err);
+    });
 }
 
 if (commandUsed === 'build') {
