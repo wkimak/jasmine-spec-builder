@@ -10,10 +10,20 @@ const excludedDirectories = {
   '.git': true
 };
 
-function getStubPathAndExport(fileName: string, stubName: string): DependencyObj {
-  const currentDirectory: string = process.cwd();
-  const dependencyPath: string = searchFileSystem(fileName, path.dirname(currentDirectory));
+export function findRootDirectory(currentDirectory: string): string {
+  const files: string[] = fs.readdirSync(currentDirectory);
 
+  for (let file in files) {
+    if (files[file] === 'package.json') {
+      return currentDirectory;
+    }
+  }
+
+  return findRootDirectory(path.dirname(currentDirectory));
+}
+
+function getStubPathAndExport(targetFileName: string, stubName: string, currentDirectory: string, projectRootDirectory: string): DependencyObj {
+  const dependencyPath: string = searchFileSystem(targetFileName, projectRootDirectory);
   if (dependencyPath) {
     const content = fs.readFileSync(dependencyPath, 'utf8');
     let relativePath = path.relative(currentDirectory, removePathExtension(dependencyPath));
@@ -30,27 +40,23 @@ function getStubPathAndExport(fileName: string, stubName: string): DependencyObj
   }
 }
 
-function searchFileSystem(stubName: string, currentPath: string): string {
-  let fileFound: string;
-  const inner = (currentPath: string) => {
-    if (!fileFound) {
-      const files: string[] = fs.readdirSync(currentPath);
+function searchFileSystem(targetFileName: string, currentPath: string): string {
+  const files: string[] = fs.readdirSync(currentPath);
 
-      for (const file in files) {
-        const currentFile: string = currentPath + '/' + files[file];
-        const stats: fs.Stats = fs.statSync(currentFile);
-        if (stats.isFile() && path.basename(currentFile).toLowerCase() === stubName.toLowerCase()) {
-          fileFound = currentFile;
-        }
-        else if (stats.isDirectory() && !excludedDirectories.hasOwnProperty(path.basename(currentPath))) {
-          inner(currentFile);
-        }
+  for (const file in files) {
+    const currentFile: string = currentPath + '/' + files[file];
+    const stats: fs.Stats = fs.statSync(currentFile);
+    if (stats.isFile() && path.basename(currentFile).toLowerCase() === targetFileName.toLowerCase()) {
+      return currentFile;
+    }
+    else if (stats.isDirectory() && !excludedDirectories.hasOwnProperty(path.basename(currentPath))) {
+      const foundFile = searchFileSystem(targetFileName, currentFile);
+      if (foundFile) {
+        return foundFile;
       }
     }
   }
-
-  inner(currentPath);
-  return fileFound;
 }
+
 
 export default getStubPathAndExport;

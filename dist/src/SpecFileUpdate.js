@@ -16,6 +16,34 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
         super(sourceFile, targetFile, useMasterServiceStub);
         this.recentProviderImportNames = { MasterServiceStub: true };
     }
+    isProvidersArray(node) {
+        return typescript_1.default.isPropertyAssignment(node) && node.name.text === 'providers';
+    }
+    visit(ctx, callback) {
+        const visitor = (node) => {
+            const result = callback(node);
+            if (result !== undefined) {
+                return result;
+            }
+            return typescript_1.default.visitEachChild(node, visitor, ctx);
+        };
+        return visitor;
+    }
+    setRecentProviderImportNames(node) {
+        if (this.isProvidersArray(node)) {
+            node.initializer.elements.forEach(child => {
+                if (child.hasOwnProperty('properties')) {
+                    child.properties.forEach(prop => {
+                        this.recentProviderImportNames[prop.initializer.text] = true;
+                    });
+                }
+                else {
+                    this.recentProviderImportNames[child.escapedText] = true;
+                }
+            });
+        }
+        return typescript_1.default.forEachChild(node, this.setRecentProviderImportNames.bind(this));
+    }
     removeImportDeclarations(ctx) {
         const callback = (node) => {
             if (typescript_1.default.isImportDeclaration(node)) {
@@ -36,31 +64,12 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
         };
         return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));
     }
-    isProvidersArray(node) {
-        return typescript_1.default.isPropertyAssignment(node) && node.name.text === 'providers';
-    }
-    setRecentProviderImportNames(node) {
-        if (this.isProvidersArray(node)) {
-            node.initializer.elements.forEach(child => {
-                if (child.hasOwnProperty('properties')) {
-                    child.properties.forEach(prop => {
-                        this.recentProviderImportNames[prop.initializer.text] = true;
-                    });
-                }
-                else {
-                    this.recentProviderImportNames[child.escapedText] = true;
-                }
-            });
-        }
-        return typescript_1.default.forEachChild(node, this.setRecentProviderImportNames.bind(this));
-    }
     updateProviders(ctx) {
         const callback = (node) => {
             if (this.isProvidersArray(node)) {
-                const providers = regex_1.isComponentFile.test(this.sourceFile.fileName) ?
+                return regex_1.isComponentFile.test(this.sourceFile.fileName) ?
                     new ComponentConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate() :
                     new ServiceConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate();
-                return providers;
             }
         };
         return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));
@@ -78,16 +87,6 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
             }
         };
         return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));
-    }
-    visit(ctx, callback) {
-        const visitor = (node) => {
-            const result = callback(node);
-            if (result !== undefined) {
-                return result;
-            }
-            return typescript_1.default.visitEachChild(node, visitor, ctx);
-        };
-        return visitor;
     }
     update() {
         this.dependencyObj = dependencies_1.default(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);

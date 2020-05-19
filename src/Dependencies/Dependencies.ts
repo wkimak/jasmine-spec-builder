@@ -1,5 +1,5 @@
 import getProviderDependencies from './providerDependencies';
-import getStubPathAndExport from './stubDependencies';
+import getStubPathAndExport, { findRootDirectory } from './stubDependencies';
 import DependencyObj from './DependencyObj.model';
 import { getStubFileName, getStubName } from '../shared/helpers';
 import ts, { ClassDeclaration, SourceFile, ParameterDeclaration } from 'typescript';
@@ -11,7 +11,9 @@ function addDependency(obj: DependencyObj): void {
 }
 
 function getDependency(fileName: string, stubName: string): void {
-  const obj: DependencyObj = getStubPathAndExport(fileName, stubName);
+  const currentDirectory: string = process.cwd();
+  const projectRootDirectory = findRootDirectory(currentDirectory);
+  const obj: DependencyObj = getStubPathAndExport(fileName, stubName, currentDirectory, projectRootDirectory);
   if (obj) {
     addDependency(obj);
   }
@@ -30,7 +32,6 @@ function getDependancyObj(sourceFile: SourceFile, classNode: ClassDeclaration, c
     constructorParams.forEach((param: any) => {
       provider = param.type.typeName.text;
       getDependency(getStubFileName(provider), getStubName(provider));
-      
     });
   }
 
