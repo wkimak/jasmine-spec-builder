@@ -47,9 +47,9 @@ function searchFileSystem(targetFileName, currentPath) {
             return currentFile;
         }
         else if (stats.isDirectory() && !excludedDirectories.hasOwnProperty(path_1.default.basename(currentPath))) {
-            const result = searchFileSystem(targetFileName, currentFile);
-            if (result) {
-                return result;
+            const foundFile = searchFileSystem(targetFileName, currentFile);
+            if (foundFile) {
+                return foundFile;
             }
         }
     }

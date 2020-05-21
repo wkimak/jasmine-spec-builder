@@ -2,7 +2,7 @@ import ts, { ImportDeclaration } from 'typescript';
 import DependencyObj from '../dependencies/DependencyObj.model';
 
 
-function getImportDeclaration(path: string, names): ImportDeclaration {
+function getImportDeclarationTemplate(path: string, names): ImportDeclaration {
   const nonDefaultImports = [];
   let defaultImport;
   for (const key in names) {
@@ -29,7 +29,7 @@ function getImportClause(defaultImport, nonDefaultImports) {
 function getImportsTemplate(dependencyObj: DependencyObj): ImportDeclaration[] {
   const result = [];
   for (const path in dependencyObj) {
-    result.push(getImportDeclaration(path, dependencyObj[path]));
+    result.push(getImportDeclarationTemplate(path, dependencyObj[path]));
   }
 
   return result;

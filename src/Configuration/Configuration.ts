@@ -1,5 +1,5 @@
 import ts, { ExpressionStatement, ObjectLiteralExpression, VariableStatement, ParameterDeclaration, ClassDeclaration, PropertyAssignment, CallExpression } from "typescript";
-import getArrowFn from "../shared/arrowFunction.js";
+import getArrowFnTemplate from "../shared/arrowFunction.js";
 import { getStubName } from "../shared/helpers.js";
 import { provide, useClass, masterServiceStub, beforeEach, async, MasterServiceStub, configureTestingModule } from '../shared/identifiers.js';
 
@@ -50,7 +50,7 @@ class Configuration {
 
   protected getConfiguration(testBed: ExpressionStatement): ExpressionStatement {
     const testBedStatements = this.getTestBedStatements(testBed);
-    return ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [getArrowFn(testBedStatements)])]));
+    return ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [getArrowFnTemplate(testBedStatements)])]));
   }
 }
 

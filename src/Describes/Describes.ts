@@ -1,9 +1,9 @@
 import ts, { ClassDeclaration, SourceFile, FunctionDeclaration, ExpressionStatement } from "typescript";
-import getArrowFn from '../shared/arrowFunction';
+import getArrowFnTemplate from '../shared/arrowFunction';
 import { describe } from '../shared/identifiers';
 
 function getDescribeTemplate(name: string): ExpressionStatement {
-  return ts.createExpressionStatement(ts.createCall(describe, undefined, [ts.createStringLiteral(name), getArrowFn()]));
+  return ts.createExpressionStatement(ts.createCall(describe, undefined, [ts.createStringLiteral(name), getArrowFnTemplate()]));
 }
 
 function getDescribesTemplate(sourceFile: ClassDeclaration, configuration: ExpressionStatement, describeBody?): ExpressionStatement[];

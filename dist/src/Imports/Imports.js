@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
-function getImportDeclaration(path, names) {
+function getImportDeclarationTemplate(path, names) {
     const nonDefaultImports = [];
     let defaultImport;
     for (const key in names) {
@@ -31,7 +31,7 @@ function getImportClause(defaultImport, nonDefaultImports) {
 function getImportsTemplate(dependencyObj) {
     const result = [];
     for (const path in dependencyObj) {
-        result.push(getImportDeclaration(path, dependencyObj[path]));
+        result.push(getImportDeclarationTemplate(path, dependencyObj[path]));
     }
     return result;
 }
