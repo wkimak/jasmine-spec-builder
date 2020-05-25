@@ -6,6 +6,7 @@ import prettier from 'prettier';
 import argv from 'yargs';
 import SpecFileCreate from './SpecFileCreate';
 import SpecFileUpdate from './SpecFileUpdate';
+import esformatter from 'esformatter';
 
 const terminal = argv.usage('Usage: $0 <command> [options]')
   .command('build', 'Build test file')
@@ -37,7 +38,15 @@ const sourceFile = ts.createSourceFile(terminal.file, fs.readFileSync(`${process
 const printer: Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
 function writeFile(data: SourceFile) {
-  fs.writeFile(specFileName, prettier.format(printer.printFile(data), { parser: 'babel' }), (err) => {
+  const esFormatted = esformatter.format(printer.printFile(data), {
+    lineBreak: {
+      "before": {
+        "CallExpression": 2,
+      }
+    },
+  });
+
+  fs.writeFile(specFileName, prettier.format(esFormatted, { parser: 'babel' }), (err) => {
     console.error('ERROR', err);
   });
 }

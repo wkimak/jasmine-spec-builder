@@ -11,6 +11,7 @@ const prettier_1 = __importDefault(require("prettier"));
 const yargs_1 = __importDefault(require("yargs"));
 const SpecFileCreate_1 = __importDefault(require("./SpecFileCreate"));
 const SpecFileUpdate_1 = __importDefault(require("./SpecFileUpdate"));
+const esformatter_1 = __importDefault(require("esformatter"));
 const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
     .command('build', 'Build test file')
     .example('$0 build -f app.component.ts', 'build test file for app.component.ts')
@@ -39,7 +40,14 @@ const specPath = `${process.cwd()}/${specFileName}`;
 const sourceFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
 const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
 function writeFile(data) {
-    fs_1.default.writeFile(specFileName, prettier_1.default.format(printer.printFile(data), { parser: 'babel' }), (err) => {
+    const esFormatted = esformatter_1.default.format(printer.printFile(data), {
+        lineBreak: {
+            "before": {
+                "CallExpression": 2,
+            }
+        },
+    });
+    fs_1.default.writeFile(specFileName, prettier_1.default.format(esFormatted, { parser: 'babel' }), (err) => {
         console.error('ERROR', err);
     });
 }
