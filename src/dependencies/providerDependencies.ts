@@ -1,5 +1,5 @@
 import ts, { NamedImportBindings, ImportSpecifier, ParameterDeclaration, SourceFile, Identifier, ImportClause, ImportDeclaration } from "typescript";
-import DependencyObj from "./DependencyObj.model";
+import { DependencyObj } from "./DependencyObj.model";
 
 let providerObj: DependencyObj;
 

@@ -1,10 +1,10 @@
-import ts, { ImportDeclaration } from 'typescript';
-import DependencyObj from '../dependencies/DependencyObj.model';
+import ts, { ImportDeclaration, ImportSpecifier } from 'typescript';
+import { DependencyNames, DependencyObj } from '../dependencies/DependencyObj.model';
 
 
-function getImportDeclarationTemplate(path: string, names): ImportDeclaration {
-  const nonDefaultImports = [];
-  let defaultImport;
+function getImportDeclarationTemplate(path: string, names: DependencyNames): ImportDeclaration {
+  const nonDefaultImports: ImportSpecifier[] = [];
+  let defaultImport: ts.Identifier;
   for (const key in names) {
     if (key !== 'default') {
       nonDefaultImports.push(ts.createImportSpecifier(undefined, ts.createIdentifier(key)));
@@ -16,7 +16,7 @@ function getImportDeclarationTemplate(path: string, names): ImportDeclaration {
   return ts.createImportDeclaration(undefined, undefined, getImportClause(defaultImport, nonDefaultImports), ts.createLiteral(path));
 }
 
-function getImportClause(defaultImport, nonDefaultImports) {
+function getImportClause(defaultImport: ts.Identifier, nonDefaultImports: ImportSpecifier[]) {
   if (defaultImport && nonDefaultImports.length) {
     return ts.createImportClause(defaultImport, ts.createNamedImports(nonDefaultImports));
   } else if (!defaultImport && nonDefaultImports.length) {
@@ -27,7 +27,7 @@ function getImportClause(defaultImport, nonDefaultImports) {
 }
 
 function getImportsTemplate(dependencyObj: DependencyObj): ImportDeclaration[] {
-  const result = [];
+  const result: ImportDeclaration[] = [];
   for (const path in dependencyObj) {
     result.push(getImportDeclarationTemplate(path, dependencyObj[path]));
   }

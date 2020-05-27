@@ -6,7 +6,7 @@ import SpecFileBuilder from "./SpecFileBuilder";
 import Configuration from "./Configuration/Configuration";
 import getDependancyObj from "./dependencies/dependencies";
 import getImportsTemplate from "./imports/imports";
-import DependencyObj from "./dependencies/DependencyObj.model";
+import { DependencyObj } from "./dependencies/DependencyObj.model";
 
 class SpecFileUpdate extends SpecFileBuilder {
   dependencyObj: DependencyObj;

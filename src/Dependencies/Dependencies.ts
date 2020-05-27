@@ -1,6 +1,6 @@
 import getProviderDependencies from './providerDependencies';
 import getStubPathAndExport, { findRootDirectory } from './stubDependencies';
-import DependencyObj from './DependencyObj.model';
+import { DependencyObj } from './DependencyObj.model';
 import { getStubFileName, getStubName } from '../shared/helpers';
 import ts, { ClassDeclaration, SourceFile, ParameterDeclaration } from 'typescript';
 

@@ -39,15 +39,19 @@ const specFileName = `${terminal.file.split('.').slice(0, -1).join('.')}.spec.ts
 const specPath = `${process.cwd()}/${specFileName}`;
 const sourceFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
 const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
-function writeFile(data) {
-    const esFormatted = esformatter_1.default.format(printer.printFile(data), {
+function formatFile(content) {
+    const esFormatted = esformatter_1.default.format(printer.printFile(content), {
         lineBreak: {
             "before": {
                 "CallExpression": 2,
             }
         },
     });
-    fs_1.default.writeFile(specFileName, prettier_1.default.format(esFormatted, { parser: 'babel' }), (err) => {
+    return prettier_1.default.format(esFormatted, { parser: 'babel' });
+}
+function writeFile(content) {
+    const formattedFile = formatFile(content);
+    fs_1.default.writeFile(specFileName, formattedFile, (err) => {
         console.error('ERROR', err);
     });
 }

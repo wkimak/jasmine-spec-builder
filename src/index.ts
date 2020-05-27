@@ -37,8 +37,8 @@ const specPath: string = `${process.cwd()}/${specFileName}`;
 const sourceFile = ts.createSourceFile(terminal.file, fs.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), ts.ScriptTarget.Latest);
 const printer: Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
-function writeFile(data: SourceFile) {
-  const esFormatted = esformatter.format(printer.printFile(data), {
+function formatFile(content: SourceFile) {
+  const esFormatted = esformatter.format(printer.printFile(content), {
     lineBreak: {
       "before": {
         "CallExpression": 2,
@@ -46,7 +46,12 @@ function writeFile(data: SourceFile) {
     },
   });
 
-  fs.writeFile(specFileName, prettier.format(esFormatted, { parser: 'babel' }), (err) => {
+  return prettier.format(esFormatted, { parser: 'babel' });
+}
+
+function writeFile(content: SourceFile) {
+  const formattedFile = formatFile(content);
+  fs.writeFile(specFileName, formattedFile, (err) => {
     console.error('ERROR', err);
   });
 }

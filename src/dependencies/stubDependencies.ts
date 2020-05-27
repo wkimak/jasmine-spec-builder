@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { isExportDefault } from '../shared/regex';
-import DependencyObj from './DependencyObj.model';
+import { DependencyObj } from './DependencyObj.model';
 import { removePathExtension } from '../shared/helpers';
 
 const excludedDirectories = {

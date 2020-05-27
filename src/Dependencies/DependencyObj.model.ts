@@ -1,5 +1,10 @@
-interface DependencyObj {
-  [path: string]: { [name: string]: string };
+
+interface DependencyNames {
+  [name: string]: string
 }
 
-export default DependencyObj;
+interface DependencyObj {
+  [path: string]: DependencyNames;
+}
+
+export { DependencyNames, DependencyObj }
