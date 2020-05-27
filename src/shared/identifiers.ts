@@ -11,4 +11,4 @@ export const testBed: Identifier = ts.createIdentifier('TestBed');
 export const compileComponents: Identifier = ts.createIdentifier('compileComponents');
 export const providers: Identifier = ts.createIdentifier('providers');
 export const configureTestingModule: Identifier = ts.createIdentifier('configureTestingModule');
-export const describe = ts.createIdentifier('describe');
+export const describe: Identifier = ts.createIdentifier('describe');
