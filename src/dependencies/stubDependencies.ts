@@ -10,7 +10,7 @@ const excludedDirectories = {
   '.git': true
 };
 
-export function findRootDirectory(currentDirectory: string): string {
+function findRootDirectory(currentDirectory: string): string {
   const files: string[] = fs.readdirSync(currentDirectory);
 
   for (let file in files) {
@@ -37,6 +37,8 @@ function getStubPathAndExport(targetFileName: string, stubName: string, currentD
     } else {
       return { [relativePath]: { default: stubName } };
     }
+  } else {
+    console.log(`${targetFileName} file was not found. All stub file names should be the provider’s name with a suffix of ’Stub.ts’. For instance, the Router provider’s stub file name would be ‘RouterStub.ts’. `)
   }
 }
 
@@ -58,5 +60,5 @@ function searchFileSystem(targetFileName: string, currentPath: string): string {
   }
 }
 
-
+export { findRootDirectory, searchFileSystem };
 export default getStubPathAndExport;

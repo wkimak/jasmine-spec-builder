@@ -37,6 +37,9 @@ function getStubPathAndExport(targetFileName, stubName, currentDirectory, projec
             return { [relativePath]: { default: stubName } };
         }
     }
+    else {
+        console.log(`${targetFileName} file was not found. All stub file names should be the provider’s name with a suffix of ’Stub.ts’. For instance, the Router provider’s stub file name would be ‘RouterStub.ts’. `);
+    }
 }
 function searchFileSystem(targetFileName, currentPath) {
     const files = fs_1.default.readdirSync(currentPath);
@@ -54,4 +57,5 @@ function searchFileSystem(targetFileName, currentPath) {
         }
     }
 }
+exports.searchFileSystem = searchFileSystem;
 exports.default = getStubPathAndExport;

@@ -1,14 +1,47 @@
 #!/usr/bin/env node
 import '../polyfills'
-import ts, { SourceFile, Printer } from 'typescript';
 import fs from 'fs';
-import prettier from 'prettier';
 import argv from 'yargs';
-import SpecFileCreate from './SpecFileCreate';
-import SpecFileUpdate from './SpecFileUpdate';
-import esformatter from 'esformatter';
+import { searchFileSystem, findRootDirectory } from './dependencies/stubDependencies';
+import { isComponentFile, isServiceFile, isResourceFile } from './shared/regex';
+import startApplication from './writeFile';
 
-const terminal = argv.usage('Usage: $0 <command> [options]')
+let buildCommandUsed: boolean;
+let masterOptionUsed: boolean;
+let sourceFileName: string;
+let targetFileName: string;
+
+function checkFileOption(argv): boolean {
+  sourceFileName = argv.file;
+  buildCommandUsed = argv._[0] === 'build';
+  targetFileName = `${sourceFileName.split('.').slice(0, -1).join('.')}.spec.ts`;
+
+  if (!isComponentFile.test(sourceFileName) && !isServiceFile.test(sourceFileName) && !isResourceFile.test(sourceFileName)) {
+    throw new Error(`Invalid file name: ${sourceFileName}. The file name must have an extension of component, service, or resource.`);
+  } else if (buildCommandUsed && fs.existsSync(targetFileName)) {
+    throw new Error(`${targetFileName} file already exists. Use the update command to update a spec file’s providers.`);
+  } else if (!buildCommandUsed && !fs.existsSync(targetFileName)) {
+    throw new Error(`${targetFileName} file does not exist. Use the build command to build a spec file from scratch.`);
+  }
+
+  return true;
+}
+
+function checkMasterOption(argv): boolean {
+  masterOptionUsed = argv.master;
+
+  if (masterOptionUsed) {
+    const rootDirectory = findRootDirectory(process.cwd());
+    const masterFilePath = searchFileSystem('MasterServiceStub.ts', rootDirectory);
+    if (!masterFilePath) {
+      throw new Error('MasterServiceStub.ts file not found. The MasterServiceStub’s file must be named MasterServiceStub.ts');
+    }
+  }
+
+  return true;
+}
+
+argv.usage('Usage: $0 <command> [options]')
   .command('build', 'Build test file')
   .example('$0 build -f app.component.ts', 'build test file for app.component.ts')
   .command('update', 'Update providers')
@@ -21,6 +54,9 @@ const terminal = argv.usage('Usage: $0 <command> [options]')
     type: 'string',
     global: true
   })
+  .check((argv) => {
+    return checkFileOption(argv);
+  })
   .option('m', {
     alias: 'master',
     demandOption: false,
@@ -28,44 +64,11 @@ const terminal = argv.usage('Usage: $0 <command> [options]')
     describe: 'Use MasterServiceStub',
     global: true
   })
+  .check((argv) => {
+    return checkMasterOption(argv);
+  })
   .help('h')
   .alias('h', 'help').argv;
 
-const commandUsed = terminal._[0];
-const specFileName: string = `${terminal.file.split('.').slice(0, -1).join('.')}.spec.ts`;
-const specPath: string = `${process.cwd()}/${specFileName}`;
-const sourceFile = ts.createSourceFile(terminal.file, fs.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), ts.ScriptTarget.Latest);
-const printer: Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
-function formatFile(content: SourceFile) {
-  const esFormatted = esformatter.format(printer.printFile(content), {
-    lineBreak: {
-      "before": {
-        "CallExpression": 2,
-      }
-    },
-  });
-
-  return prettier.format(esFormatted, { parser: 'babel' });
-}
-
-function writeFile(content: SourceFile) {
-  const formattedFile = formatFile(content);
-  fs.writeFile(specFileName, formattedFile, (err) => {
-    console.error('ERROR', err);
-  });
-}
-
-if (commandUsed === 'build') {
-  if (!fs.existsSync(specPath)) {
-    const targetFile = ts.createSourceFile(specFileName, "", ts.ScriptTarget.Latest, false);
-    const created = new SpecFileCreate(sourceFile, targetFile, terminal.master).build();
-    writeFile(created);
-  }
-} else if (commandUsed === 'update') {
-  if (fs.existsSync(specPath)) {
-    const targetFile = ts.createSourceFile(specFileName, fs.readFileSync(`${process.cwd()}/${specFileName}`, 'utf8'), ts.ScriptTarget.Latest, false);
-    const updated = new SpecFileUpdate(sourceFile, targetFile, terminal.master).update();
-    writeFile(updated);
-  }
-}
+startApplication(buildCommandUsed, masterOptionUsed, sourceFileName, targetFileName);

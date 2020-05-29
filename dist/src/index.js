@@ -5,14 +5,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("../polyfills");
-const typescript_1 = __importDefault(require("typescript"));
 const fs_1 = __importDefault(require("fs"));
-const prettier_1 = __importDefault(require("prettier"));
 const yargs_1 = __importDefault(require("yargs"));
-const SpecFileCreate_1 = __importDefault(require("./SpecFileCreate"));
-const SpecFileUpdate_1 = __importDefault(require("./SpecFileUpdate"));
-const esformatter_1 = __importDefault(require("esformatter"));
-const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
+const stubDependencies_1 = require("./dependencies/stubDependencies");
+const regex_1 = require("./shared/regex");
+const writeFile_1 = __importDefault(require("./writeFile"));
+let buildCommandUsed;
+let masterOptionUsed;
+let sourceFileName;
+let targetFileName;
+function checkFileOption(argv) {
+    sourceFileName = argv.file;
+    buildCommandUsed = argv._[0] === 'build';
+    targetFileName = `${sourceFileName.split('.').slice(0, -1).join('.')}.spec.ts`;
+    if (!regex_1.isComponentFile.test(sourceFileName) && !regex_1.isServiceFile.test(sourceFileName) && !regex_1.isResourceFile.test(sourceFileName)) {
+        throw new Error(`Invalid file name: ${sourceFileName}. The file name must have an extension of component, service, or resource.`);
+    }
+    else if (buildCommandUsed && fs_1.default.existsSync(targetFileName)) {
+        throw new Error(`${targetFileName} file already exists. Use the update command to update a spec file’s providers.`);
+    }
+    else if (!buildCommandUsed && !fs_1.default.existsSync(targetFileName)) {
+        throw new Error(`${targetFileName} file does not exist. Use the build command to build a spec file from scratch.`);
+    }
+    return true;
+}
+function checkMasterOption(argv) {
+    masterOptionUsed = argv.master;
+    if (masterOptionUsed) {
+        const rootDirectory = stubDependencies_1.findRootDirectory(process.cwd());
+        const masterFilePath = stubDependencies_1.searchFileSystem('MasterServiceStub.ts', rootDirectory);
+        if (!masterFilePath) {
+            throw new Error('MasterServiceStub.ts file not found. The MasterServiceStub’s file must be named MasterServiceStub.ts');
+        }
+    }
+    return true;
+}
+yargs_1.default.usage('Usage: $0 <command> [options]')
     .command('build', 'Build test file')
     .example('$0 build -f app.component.ts', 'build test file for app.component.ts')
     .command('update', 'Update providers')
@@ -25,6 +53,9 @@ const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
     type: 'string',
     global: true
 })
+    .check((argv) => {
+    return checkFileOption(argv);
+})
     .option('m', {
     alias: 'master',
     demandOption: false,
@@ -32,40 +63,9 @@ const terminal = yargs_1.default.usage('Usage: $0 <command> [options]')
     describe: 'Use MasterServiceStub',
     global: true
 })
+    .check((argv) => {
+    return checkMasterOption(argv);
+})
     .help('h')
     .alias('h', 'help').argv;
-const commandUsed = terminal._[0];
-const specFileName = `${terminal.file.split('.').slice(0, -1).join('.')}.spec.ts`;
-const specPath = `${process.cwd()}/${specFileName}`;
-const sourceFile = typescript_1.default.createSourceFile(terminal.file, fs_1.default.readFileSync(`${process.cwd()}/${terminal.file}`, 'utf8'), typescript_1.default.ScriptTarget.Latest);
-const printer = typescript_1.default.createPrinter({ newLine: typescript_1.default.NewLineKind.LineFeed });
-function formatFile(content) {
-    const esFormatted = esformatter_1.default.format(printer.printFile(content), {
-        lineBreak: {
-            "before": {
-                "CallExpression": 2,
-            }
-        },
-    });
-    return prettier_1.default.format(esFormatted, { parser: 'babel' });
-}
-function writeFile(content) {
-    const formattedFile = formatFile(content);
-    fs_1.default.writeFile(specFileName, formattedFile, (err) => {
-        console.error('ERROR', err);
-    });
-}
-if (commandUsed === 'build') {
-    if (!fs_1.default.existsSync(specPath)) {
-        const targetFile = typescript_1.default.createSourceFile(specFileName, "", typescript_1.default.ScriptTarget.Latest, false);
-        const created = new SpecFileCreate_1.default(sourceFile, targetFile, terminal.master).build();
-        writeFile(created);
-    }
-}
-else if (commandUsed === 'update') {
-    if (fs_1.default.existsSync(specPath)) {
-        const targetFile = typescript_1.default.createSourceFile(specFileName, fs_1.default.readFileSync(`${process.cwd()}/${specFileName}`, 'utf8'), typescript_1.default.ScriptTarget.Latest, false);
-        const updated = new SpecFileUpdate_1.default(sourceFile, targetFile, terminal.master).update();
-        writeFile(updated);
-    }
-}
+writeFile_1.default(buildCommandUsed, masterOptionUsed, sourceFileName, targetFileName);
