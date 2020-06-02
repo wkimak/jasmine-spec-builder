@@ -1,5 +1,5 @@
 {
-  "name": "skeleton-tool",
+  "name": "jasmine-spec-builder",
   "version": "1.0.0",
   "description": "A tool to generate Angular spec files",
   "main": "index.js",
@@ -8,28 +8,26 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wkimak/skeleton-tool.git"
+    "url": "git+https://github.com/wkimak/jasmine-spec-builder.git"
   },
   "author": "William Kimak",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/wkimak/skeleton-tool/issues"
+    "url": "https://github.com/wkimak/jasmine-spec-builder/issues"
   },
-  "homepage": "https://github.com/wkimak/skeleton-tool#readme",
+  "homepage": "https://github.com/wkimak/jasmine-spec-builder#readme",
   "bin": {
-    "tb": "dist/src/index.js"
+    "jsb": "dist/src/index.js"
   },
   "dependencies": {
     "core-js": "^3.6.5",
     "esformatter": "^0.11.3",
     "prettier": "^1.19.1",
-    "ts-simple-ast": "^21.0.4",
     "yargs": "^15.3.1"
   },
   "devDependencies": {
     "@types/core-js": "^2.5.3",
     "@types/node": "^13.13.5",
-    "ts-node": "^8.10.1",
     "typescript": "^3.8.3"
   }
 }
