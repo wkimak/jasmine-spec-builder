@@ -1,2 +1,2 @@
-# skeleton-tool
-command line tool to build out unit test skeleton
+# jasmine-spec-builder
+command line tool to build and update jasmine unit tests
