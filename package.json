@@ -1,7 +1,7 @@
 {
   "name": "jasmine-spec-builder",
   "version": "1.0.0",
-  "description": "A tool to generate Angular spec files",
+  "description": "A command line tool to build and update jasmine spec files",
   "main": "index.js",
   "scripts": {
     "build": "tsc"
@@ -10,12 +10,22 @@
     "type": "git",
     "url": "git+https://github.com/wkimak/jasmine-spec-builder.git"
   },
-  "author": "William Kimak",
+  "author": "William Kimak <wkimak94@gmail.com>",
   "license": "ISC",
+  "keywords": [
+    "jasmine",
+    "unit test generator",
+    "testing",
+    "spec build",
+    "spec update",
+    "angular",
+    "cli",
+    "command line tool"
+  ],
   "bugs": {
     "url": "https://github.com/wkimak/jasmine-spec-builder/issues"
   },
-  "homepage": "https://github.com/wkimak/jasmine-spec-builder#readme",
+  "homepage": "https://github.com/wkimak/jasmine-spec-builder",
   "bin": {
     "jsb": "dist/src/index.js"
   },
