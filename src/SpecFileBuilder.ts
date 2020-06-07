@@ -12,7 +12,7 @@ class SpecFileBuilder {
     this.targetFile = targetFile;
     this.useMasterServiceStub = useMasterServiceStub;
     this.classNode = this.findClassNode(sourceFile);
-    this.constructorParams = this.findConstructorParams(this.classNode);
+    this.constructorParams = this.findConstructorParams(this.classNode) || ts.createNodeArray();
   }
 
   private findClassNode(sourceFile: SourceFile): ClassDeclaration {

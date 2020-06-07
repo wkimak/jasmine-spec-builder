@@ -16,12 +16,15 @@ class Configuration {
     generateStubs() {
         const stubTemplates = [];
         this.constructorParams.forEach((param) => {
-            const providerName = param.type.typeName.text;
-            let stubName = helpers_js_1.getStubName(providerName);
-            if (this.useMasterServiceStub) {
-                stubName = helpers_js_1.getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
+            const typeName = param.type.typeName;
+            if (typeName) {
+                const providerName = typeName.text;
+                let stubName = helpers_js_1.getStubName(providerName);
+                if (this.useMasterServiceStub) {
+                    stubName = helpers_js_1.getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
+                }
+                stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
             }
-            stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
         });
         return stubTemplates;
     }

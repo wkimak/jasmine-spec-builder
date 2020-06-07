@@ -10,7 +10,7 @@ class SpecFileBuilder {
         this.targetFile = targetFile;
         this.useMasterServiceStub = useMasterServiceStub;
         this.classNode = this.findClassNode(sourceFile);
-        this.constructorParams = this.findConstructorParams(this.classNode);
+        this.constructorParams = this.findConstructorParams(this.classNode) || typescript_1.default.createNodeArray();
     }
     findClassNode(sourceFile) {
         for (const childNode of sourceFile.statements) {

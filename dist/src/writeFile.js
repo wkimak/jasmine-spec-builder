@@ -18,7 +18,7 @@ function formatFile(content) {
             }
         },
     });
-    return prettier_1.default.format(esFormatted, { parser: 'babel' });
+    return prettier_1.default.format(esFormatted, { parser: 'babel', singleQuote: true });
 }
 function writeFile(content, targetFileName, successCb) {
     const formattedFile = formatFile(content);

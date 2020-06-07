@@ -8,8 +8,11 @@ let providerObj;
 function getProviderDependencies(constructorParams, sourceFile) {
     providerObj = {};
     constructorParams.forEach((param) => {
-        const provider = param.type.typeName.text;
-        findProviderDependencies(provider, sourceFile);
+        const typeName = param.type.typeName;
+        if (typeName) {
+            const provider = typeName.text;
+            findProviderDependencies(provider, sourceFile);
+        }
     });
     return providerObj;
 }

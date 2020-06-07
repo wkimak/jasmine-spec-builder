@@ -6,8 +6,12 @@ let providerObj: DependencyObj;
 function getProviderDependencies(constructorParams: ts.NodeArray<ParameterDeclaration>, sourceFile: SourceFile): DependencyObj {
   providerObj = {};
   constructorParams.forEach((param: any) => {
-    const provider: string = param.type.typeName.text;
-    findProviderDependencies(provider, sourceFile);
+    const typeName: Identifier = param.type.typeName;
+    
+    if (typeName) {
+      const provider: string = typeName.text;
+      findProviderDependencies(provider, sourceFile);
+    }
   });
   return providerObj;
 }

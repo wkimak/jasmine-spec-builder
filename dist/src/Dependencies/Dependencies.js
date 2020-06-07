@@ -37,8 +37,11 @@ function getDependancyObj(sourceFile, classNode, constructorParams, useMasterSer
     }
     else {
         constructorParams.forEach((param) => {
-            provider = param.type.typeName.text;
-            getDependency(helpers_1.getStubFileName(provider), helpers_1.getStubName(provider));
+            const typeName = param.type.typeName;
+            if (typeName) {
+                const provider = typeName.text;
+                getDependency(helpers_1.getStubFileName(provider), helpers_1.getStubName(provider));
+            }
         });
     }
     getDependency(sourceFile.fileName, classNode.name.text);

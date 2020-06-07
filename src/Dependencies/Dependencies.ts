@@ -2,7 +2,7 @@ import getProviderDependencies from './providerDependencies';
 import getStubPathAndExport, { findRootDirectory } from './stubDependencies';
 import { DependencyObj } from './DependencyObj.model';
 import { getStubFileName, getStubName } from '../shared/helpers';
-import ts, { ClassDeclaration, SourceFile, ParameterDeclaration } from 'typescript';
+import ts, { ClassDeclaration, SourceFile, ParameterDeclaration, Identifier } from 'typescript';
 
 let dependencyObj: DependencyObj;
 
@@ -30,8 +30,12 @@ function getDependancyObj(sourceFile: SourceFile, classNode: ClassDeclaration, c
     getDependency(getStubFileName(provider), getStubName(provider));
   } else {
     constructorParams.forEach((param: any) => {
-      provider = param.type.typeName.text;
-      getDependency(getStubFileName(provider), getStubName(provider));
+      const typeName: Identifier = param.type.typeName;
+
+      if (typeName) {
+        const provider: string = typeName.text;
+        getDependency(getStubFileName(provider), getStubName(provider));
+      }
     });
   }
 

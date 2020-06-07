@@ -1,4 +1,4 @@
-import ts, { ExpressionStatement, ObjectLiteralExpression, VariableStatement, ParameterDeclaration, ClassDeclaration, PropertyAssignment, CallExpression } from "typescript";
+import ts, { ExpressionStatement, ObjectLiteralExpression, VariableStatement, ParameterDeclaration, ClassDeclaration, PropertyAssignment, CallExpression, Identifier } from "typescript";
 import getArrowFnTemplate from "../shared/arrowFunction.js";
 import { getStubName } from "../shared/helpers.js";
 import { provide, useClass, masterServiceStub, beforeEach, async, MasterServiceStub, configureTestingModule } from '../shared/identifiers.js';
@@ -17,13 +17,17 @@ class Configuration {
   protected generateStubs(): ObjectLiteralExpression[] {
     const stubTemplates: ObjectLiteralExpression[] = [];
     this.constructorParams.forEach((param: any) => {
-      const providerName: string = param.type.typeName.text;
-      let stubName = getStubName(providerName);
-      if (this.useMasterServiceStub) {
-        stubName = getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
-      }
+      const typeName: Identifier = param.type.typeName;
+      if (typeName) {
+        const providerName: string = typeName.text;
+        let stubName = getStubName(providerName);
 
-      stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
+        if (this.useMasterServiceStub) {
+          stubName = getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
+        }
+
+        stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
+      }
     });
     return stubTemplates;
   }

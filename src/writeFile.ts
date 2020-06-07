@@ -15,7 +15,7 @@ function formatFile(content: SourceFile): string {
     },
   });
 
-  return prettier.format(esFormatted, { parser: 'babel' });
+  return prettier.format(esFormatted, { parser: 'babel', singleQuote: true });
 }
 
 function writeFile(content: SourceFile, targetFileName: string, successCb: Function): void {

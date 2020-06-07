@@ -15,7 +15,6 @@ let masterOptionUsed;
 let sourceFileName;
 let targetFileName;
 function checkFileOption(argv) {
-    console.log('arv', argv);
     sourceFileName = argv.file;
     buildCommandUsed = argv._[0] === 'build';
     targetFileName = `${sourceFileName.split('.').slice(0, -1).join('.')}.spec.ts`;
