@@ -26,9 +26,11 @@ function getStubPathAndExport(targetFileName: string, stubName: string, currentD
   const dependencyPath: string = searchFileSystem(targetFileName, projectRootDirectory);
   if (dependencyPath) {
     const content = fs.readFileSync(dependencyPath, 'utf8');
-    let relativePath = path.relative(currentDirectory, removePathExtension(dependencyPath));
 
-    if (currentDirectory === path.dirname(dependencyPath)) {
+    // Make path separators consistent beetween Windows and Mac
+    let relativePath = path.relative(currentDirectory, removePathExtension(dependencyPath)).split(path.sep).join('/');
+
+    if (currentDirectory.split(path.sep).join('/') === path.dirname(dependencyPath).split(path.sep).join('/')) {
       relativePath = `./${relativePath}`;
     }
 

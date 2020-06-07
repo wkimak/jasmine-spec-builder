@@ -26,8 +26,9 @@ function getStubPathAndExport(targetFileName, stubName, currentDirectory, projec
     const dependencyPath = searchFileSystem(targetFileName, projectRootDirectory);
     if (dependencyPath) {
         const content = fs_1.default.readFileSync(dependencyPath, 'utf8');
-        let relativePath = path_1.default.relative(currentDirectory, helpers_1.removePathExtension(dependencyPath));
-        if (currentDirectory === path_1.default.dirname(dependencyPath)) {
+        // Make path separators consistent beetween Windows and Mac
+        let relativePath = path_1.default.relative(currentDirectory, helpers_1.removePathExtension(dependencyPath)).split(path_1.default.sep).join('/');
+        if (currentDirectory.split(path_1.default.sep).join('/') === path_1.default.dirname(dependencyPath).split(path_1.default.sep).join('/')) {
             relativePath = `./${relativePath}`;
         }
         if (!regex_1.isExportDefault.test(content)) {
