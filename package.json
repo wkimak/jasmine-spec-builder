@@ -1,6 +1,6 @@
 {
   "name": "jasmine-spec-builder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A command line tool to build and update jasmine spec files",
   "main": "index.js",
   "scripts": {
