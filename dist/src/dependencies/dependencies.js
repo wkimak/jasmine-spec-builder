@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const providerDependencies_1 = __importDefault(require("./providerDependencies"));
 const stubDependencies_1 = __importStar(require("./stubDependencies"));
 const helpers_1 = require("../shared/helpers");
-let dependencyObj;
+let dependencyObj = {};
 function addDependency(obj) {
     dependencyObj = Object.assign(Object.assign({}, dependencyObj), obj);
 }
@@ -26,10 +26,15 @@ function getDependency(fileName, stubName) {
     }
 }
 ;
-function getDependancyObj(sourceFile, classNode, constructorParams, useMasterServiceStub) {
-    dependencyObj = {
-        '@angular/core/testing': { TestBed: 'TestBed', async: 'async' }
-    };
+function setTestingPathDependencies(isComponent) {
+    const path = '@angular/core/testing';
+    dependencyObj[path] = { TestBed: 'TestBed', async: 'async' };
+    if (isComponent) {
+        dependencyObj[path] = Object.assign(Object.assign({}, dependencyObj[path]), { ComponentFixture: 'ComponentFixture' });
+    }
+}
+function getDependancyObj(isComponent, sourceFile, classNode, constructorParams, useMasterServiceStub) {
+    setTestingPathDependencies(isComponent);
     let provider;
     if (useMasterServiceStub) {
         provider = 'MasterService';

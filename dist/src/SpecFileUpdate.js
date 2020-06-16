@@ -89,7 +89,7 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
         return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));
     }
     update() {
-        this.dependencyObj = dependencies_1.default(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
+        this.dependencyObj = dependencies_1.default(this.isComponent, this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
         this.setRecentProviderImportNames(this.targetFile);
         const rootNode = typescript_1.default.transform(this.targetFile, [
             this.removeImportDeclarations.bind(this),

@@ -1,7 +1,6 @@
-import ts, { SourceFile, ExpressionStatement } from 'typescript';
+import ts, { SourceFile } from 'typescript';
 import ComponentConfiguration from './Configuration/ComponentConfiguration';
 import ServiceConfiguration from './Configuration/ServiceConfiguration';
-import { isComponentFile } from './shared/regex';
 import SpecFileBuilder from './SpecFileBuilder';
 import getDependancyObj from './dependencies/dependencies';
 import getImportsTemplate from './imports/imports';
@@ -13,9 +12,9 @@ class SpecFileCreate extends SpecFileBuilder {
   }
 
   public build(): SourceFile {
-    const dependencyObj = getDependancyObj(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
+    const dependencyObj = getDependancyObj(this.isComponent, this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
     const imports = getImportsTemplate(dependencyObj);
-    const configuration: ExpressionStatement[] = isComponentFile.test(this.sourceFile.fileName) ?
+    const configuration: any[] = this.isComponent ?
       new ComponentConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate() :
       new ServiceConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate();
     const describes = getDescribesTemplate(this.sourceFile, configuration);

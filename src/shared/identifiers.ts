@@ -18,3 +18,4 @@ export const createComponent: Identifier = ts.createIdentifier('createComponent'
 export const componentInstance: Identifier = ts.createIdentifier('componentInstance');
 export const service: Identifier = ts.createIdentifier('service');
 export const get: Identifier = ts.createIdentifier('get');
+export const componentFixture: Identifier = ts.createIdentifier('ComponentFixture');

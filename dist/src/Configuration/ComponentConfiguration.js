@@ -17,10 +17,16 @@ class ComponentConfiguration extends Configuration_1.default {
         const className = typescript_1.default.createIdentifier(this.classNode.name.text);
         return typescript_1.default.createPropertyAssignment(identifiers_1.declarations, typescript_1.default.createArrayLiteral([className]));
     }
+    getComponentDeclarationTemplate() {
+        return typescript_1.default.createVariableStatement(undefined, typescript_1.default.createVariableDeclarationList([typescript_1.default.createVariableDeclaration(identifiers_1.component, typescript_1.default.createTypeReferenceNode(typescript_1.default.createIdentifier(this.classNode.name.text), undefined))], typescript_1.default.NodeFlags.Let));
+    }
+    getFixtureDeclarationTemplate() {
+        return typescript_1.default.createVariableStatement(undefined, typescript_1.default.createVariableDeclarationList([typescript_1.default.createVariableDeclaration(identifiers_1.fixture, typescript_1.default.createTypeReferenceNode(identifiers_1.componentFixture, [typescript_1.default.createTypeReferenceNode(this.classNode.name.text, undefined)]))], typescript_1.default.NodeFlags.Let));
+    }
     getComponentFixtureTemplate() {
         return [
             typescript_1.default.createExpressionStatement(typescript_1.default.createBinary(identifiers_1.fixture, typescript_1.default.SyntaxKind.EqualsToken, typescript_1.default.createPropertyAccess(identifiers_1.testBed, typescript_1.default.createCall(identifiers_1.createComponent, undefined, [typescript_1.default.createIdentifier(this.classNode.name.text)])))),
-            typescript_1.default.createExpressionStatement(typescript_1.default.createBinary(identifiers_1.component, typescript_1.default.SyntaxKind.EqualsToken, typescript_1.default.createPropertyAccess(identifiers_1.testBed, identifiers_1.componentInstance)))
+            typescript_1.default.createExpressionStatement(typescript_1.default.createBinary(identifiers_1.component, typescript_1.default.SyntaxKind.EqualsToken, typescript_1.default.createPropertyAccess(identifiers_1.fixture, identifiers_1.componentInstance)))
         ];
     }
     getProvidersTemplate() {
@@ -28,8 +34,12 @@ class ComponentConfiguration extends Configuration_1.default {
         return typescript_1.default.createPropertyAssignment(identifiers_1.providers, typescript_1.default.createArrayLiteral(providersArray));
     }
     getConfigurationTemplate() {
+        const componentDeclaration = this.getComponentDeclarationTemplate();
+        const fixtureDeclaration = this.getFixtureDeclarationTemplate();
         const testingModule = this.getTestingModuleTemplate([this.getDeclarationsTemplate(), this.getProvidersTemplate()]);
-        return this.getConfiguration(this.getTestBedTemplate(testingModule), this.getComponentFixtureTemplate());
+        const testBed = this.getTestBedTemplate(testingModule);
+        const componentFixture = this.getComponentFixtureTemplate();
+        return this.getConfiguration([componentDeclaration, fixtureDeclaration], testBed, componentFixture);
     }
 }
 exports.default = ComponentConfiguration;

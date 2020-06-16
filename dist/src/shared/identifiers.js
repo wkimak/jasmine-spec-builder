@@ -22,3 +22,4 @@ exports.createComponent = typescript_1.default.createIdentifier('createComponent
 exports.componentInstance = typescript_1.default.createIdentifier('componentInstance');
 exports.service = typescript_1.default.createIdentifier('service');
 exports.get = typescript_1.default.createIdentifier('get');
+exports.componentFixture = typescript_1.default.createIdentifier('ComponentFixture');

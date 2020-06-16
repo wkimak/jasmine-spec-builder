@@ -1,6 +1,8 @@
 import ts, { SourceFile, ClassDeclaration, ParameterDeclaration } from "typescript";
+import { isComponentFile } from "./shared/regex";
 
 class SpecFileBuilder {
+  isComponent: boolean;
   sourceFile: SourceFile;
   targetFile: SourceFile;
   useMasterServiceStub: boolean;
@@ -8,6 +10,7 @@ class SpecFileBuilder {
   constructorParams: ts.NodeArray<ParameterDeclaration>;
 
   constructor(sourceFile: SourceFile, targetFile: SourceFile, useMasterServiceStub: boolean) {
+    this.isComponent = isComponentFile.test(sourceFile.fileName);
     this.sourceFile = sourceFile;
     this.targetFile = targetFile;
     this.useMasterServiceStub = useMasterServiceStub;

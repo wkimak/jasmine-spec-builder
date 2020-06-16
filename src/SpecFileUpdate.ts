@@ -1,4 +1,4 @@
-import ts, { SourceFile, PropertyAssignment } from "typescript";
+import ts, { SourceFile } from "typescript";
 import { isComponentFile } from "./shared/regex";
 import ComponentConfiguration from "./Configuration/ComponentConfiguration";
 import ServiceConfiguration from "./Configuration/ServiceConfiguration";
@@ -97,7 +97,7 @@ class SpecFileUpdate extends SpecFileBuilder {
   }
 
   public update(): SourceFile {
-    this.dependencyObj = getDependancyObj(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
+    this.dependencyObj = getDependancyObj(this.isComponent, this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
     this.setRecentProviderImportNames(this.targetFile);
     const rootNode = ts.transform(
       this.targetFile,

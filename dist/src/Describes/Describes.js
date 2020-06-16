@@ -18,7 +18,6 @@ function getDescribesTemplate(sourceFile, configuration, describeBody = { statem
         if (typescript_1.default.isClassDeclaration(childNode)) {
             const body = describeBody.statements[0].expression.arguments[1].body;
             body.statements = typescript_1.default.createNodeArray(configuration);
-            console.log('STATEMENTS', configuration[1].expression.arguments[0].body);
             getDescribesTemplate(childNode, configuration, body);
         }
     });

@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
 const ComponentConfiguration_1 = __importDefault(require("./Configuration/ComponentConfiguration"));
 const ServiceConfiguration_1 = __importDefault(require("./Configuration/ServiceConfiguration"));
-const regex_1 = require("./shared/regex");
 const SpecFileBuilder_1 = __importDefault(require("./SpecFileBuilder"));
 const dependencies_1 = __importDefault(require("./dependencies/dependencies"));
 const imports_1 = __importDefault(require("./imports/imports"));
@@ -16,9 +15,9 @@ class SpecFileCreate extends SpecFileBuilder_1.default {
         super(sourceFile, targetFile, useMasterServiceStub);
     }
     build() {
-        const dependencyObj = dependencies_1.default(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
+        const dependencyObj = dependencies_1.default(this.isComponent, this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
         const imports = imports_1.default(dependencyObj);
-        const configuration = regex_1.isComponentFile.test(this.sourceFile.fileName) ?
+        const configuration = this.isComponent ?
             new ComponentConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate() :
             new ServiceConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate();
         const describes = describes_1.default(this.sourceFile, configuration);

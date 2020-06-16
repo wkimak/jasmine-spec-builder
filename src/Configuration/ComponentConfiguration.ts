@@ -1,7 +1,6 @@
 import ConfigBuilder from "./Configuration";
-import ts, { Identifier, PropertyAssignment, ObjectLiteralExpression, CallExpression, ExpressionStatement, ParameterDeclaration, ClassDeclaration, VariableDeclarationList } from "typescript";
-import { declarations, testBed, providers, compileComponents, component, createComponent, fixture, componentInstance, async } from "../shared/identifiers";
-import getArrowFnTemplate from "../shared/arrowFunctionTemplate";
+import ts, { Identifier, PropertyAssignment, ObjectLiteralExpression, CallExpression, ExpressionStatement, ParameterDeclaration, ClassDeclaration, VariableDeclarationList, VariableStatement } from "typescript";
+import { declarations, testBed, providers, compileComponents, component, createComponent, fixture, componentInstance, async, componentFixture } from "../shared/identifiers";
 
 class ComponentConfiguration extends ConfigBuilder {
   constructor(classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
@@ -17,6 +16,14 @@ class ComponentConfiguration extends ConfigBuilder {
     return ts.createPropertyAssignment(declarations, ts.createArrayLiteral([className]));
   }
 
+  private getComponentDeclarationTemplate(): VariableStatement {
+    return ts.createVariableStatement(undefined, ts.createVariableDeclarationList([ts.createVariableDeclaration(component, ts.createTypeReferenceNode(ts.createIdentifier(this.classNode.name.text), undefined))], ts.NodeFlags.Let));
+  }
+
+  private getFixtureDeclarationTemplate(): VariableStatement {
+    return ts.createVariableStatement(undefined, ts.createVariableDeclarationList([ts.createVariableDeclaration(fixture, ts.createTypeReferenceNode(componentFixture, [ts.createTypeReferenceNode(this.classNode.name.text, undefined)]))], ts.NodeFlags.Let));
+  }
+
   private getComponentFixtureTemplate(): ExpressionStatement[] {
 
     return [
@@ -25,7 +32,7 @@ class ComponentConfiguration extends ConfigBuilder {
           [ts.createIdentifier(this.classNode.name.text)])))),
 
       ts.createExpressionStatement(
-        ts.createBinary(component, ts.SyntaxKind.EqualsToken, ts.createPropertyAccess(testBed, componentInstance)
+        ts.createBinary(component, ts.SyntaxKind.EqualsToken, ts.createPropertyAccess(fixture, componentInstance)
         ))
     ];
   }
@@ -38,8 +45,13 @@ class ComponentConfiguration extends ConfigBuilder {
   }
 
   public getConfigurationTemplate(): ExpressionStatement[] {
+    const componentDeclaration = this.getComponentDeclarationTemplate();
+    const fixtureDeclaration = this.getFixtureDeclarationTemplate();
     const testingModule = this.getTestingModuleTemplate([this.getDeclarationsTemplate(), this.getProvidersTemplate()]);
-    return this.getConfiguration(this.getTestBedTemplate(testingModule), this.getComponentFixtureTemplate());
+    const testBed = this.getTestBedTemplate(testingModule);
+    const componentFixture = this.getComponentFixtureTemplate();
+
+    return this.getConfiguration([componentDeclaration, fixtureDeclaration], testBed, componentFixture);
   }
 }
 

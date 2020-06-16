@@ -4,7 +4,7 @@ import { DependencyObj } from './DependencyObj.model';
 import { getStubFileName, getStubName } from '../shared/helpers';
 import ts, { ClassDeclaration, SourceFile, ParameterDeclaration, Identifier } from 'typescript';
 
-let dependencyObj: DependencyObj;
+let dependencyObj: DependencyObj = {};
 
 function addDependency(obj: DependencyObj): void {
   dependencyObj = { ...dependencyObj, ...obj };
@@ -19,10 +19,18 @@ function getDependency(fileName: string, stubName: string): void {
   }
 };
 
-function getDependancyObj(sourceFile: SourceFile, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean): DependencyObj {
-  dependencyObj = {
-    '@angular/core/testing': { TestBed: 'TestBed', async: 'async' }
+function setTestingPathDependencies(isComponent: boolean) {
+  const path = '@angular/core/testing';
+  dependencyObj[path] = { TestBed: 'TestBed', async: 'async' };
+
+  if (isComponent) {
+    dependencyObj[path] = { ...dependencyObj[path], ComponentFixture: 'ComponentFixture' }
   }
+}
+
+function getDependancyObj(isComponent: boolean, sourceFile: SourceFile, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean): DependencyObj {
+
+  setTestingPathDependencies(isComponent);
 
   let provider: string;
   if (useMasterServiceStub) {

@@ -2,7 +2,7 @@ import ts, { ExpressionStatement, ObjectLiteralExpression, VariableStatement, Pa
 import getArrowFnTemplate from "../shared/arrowFunctionTemplate.js";
 import { getStubName } from "../shared/helpers.js";
 import getBeforeEachTemplate from '../shared/beforeEachTemplate';
-import { provide, useClass, masterServiceStub, beforeEach, async, MasterServiceStub, configureTestingModule } from '../shared/identifiers.js';
+import { provide, useClass, masterServiceStub, async, MasterServiceStub, configureTestingModule } from '../shared/identifiers.js';
 
 class Configuration {
   constructorParams: ts.NodeArray<ParameterDeclaration>;
@@ -53,9 +53,11 @@ class Configuration {
     return this.useMasterServiceStub ? [this.getMasterServiceInitTemplate(), testBed] : [testBed];
   }
 
-  protected getConfiguration(testBed: ExpressionStatement, classInit: ExpressionStatement[]): ExpressionStatement[] {
+  protected getConfiguration(variableDeclarations: VariableStatement[], testBed: ExpressionStatement, classInit: ExpressionStatement[]): any[] {
     const testBedStatements = this.getTestBedStatements(testBed);
-    return [getBeforeEachTemplate([ts.createCall(async, undefined, [getArrowFnTemplate(testBedStatements)])]), getBeforeEachTemplate([getArrowFnTemplate(classInit)])];
+    const configBeforeEach = getBeforeEachTemplate([ts.createCall(async, undefined, [getArrowFnTemplate(testBedStatements)])]);
+    const classInitBeforeEach = getBeforeEachTemplate([getArrowFnTemplate(classInit)]);
+    return [...variableDeclarations, configBeforeEach, classInitBeforeEach];
   }
 }
 

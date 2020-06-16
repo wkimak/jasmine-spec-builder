@@ -43,9 +43,11 @@ class Configuration {
     getTestBedStatements(testBed) {
         return this.useMasterServiceStub ? [this.getMasterServiceInitTemplate(), testBed] : [testBed];
     }
-    getConfiguration(testBed, classInit) {
+    getConfiguration(variableDeclarations, testBed, classInit) {
         const testBedStatements = this.getTestBedStatements(testBed);
-        return [beforeEachTemplate_1.default([typescript_1.default.createCall(identifiers_js_1.async, undefined, [arrowFunctionTemplate_js_1.default(testBedStatements)])]), beforeEachTemplate_1.default([arrowFunctionTemplate_js_1.default(classInit)])];
+        const configBeforeEach = beforeEachTemplate_1.default([typescript_1.default.createCall(identifiers_js_1.async, undefined, [arrowFunctionTemplate_js_1.default(testBedStatements)])]);
+        const classInitBeforeEach = beforeEachTemplate_1.default([arrowFunctionTemplate_js_1.default(classInit)]);
+        return [...variableDeclarations, configBeforeEach, classInitBeforeEach];
     }
 }
 exports.default = Configuration;

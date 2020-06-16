@@ -4,8 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
+const regex_1 = require("./shared/regex");
 class SpecFileBuilder {
     constructor(sourceFile, targetFile, useMasterServiceStub) {
+        this.isComponent = regex_1.isComponentFile.test(sourceFile.fileName);
         this.sourceFile = sourceFile;
         this.targetFile = targetFile;
         this.useMasterServiceStub = useMasterServiceStub;
