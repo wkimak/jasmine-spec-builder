@@ -4,8 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
-const arrowFunction_js_1 = __importDefault(require("../shared/arrowFunction.js"));
+const arrowFunctionTemplate_js_1 = __importDefault(require("../shared/arrowFunctionTemplate.js"));
 const helpers_js_1 = require("../shared/helpers.js");
+const beforeEachTemplate_1 = __importDefault(require("../shared/beforeEachTemplate"));
 const identifiers_js_1 = require("../shared/identifiers.js");
 class Configuration {
     constructor(classNode, constructorParams, useMasterServiceStub) {
@@ -42,9 +43,9 @@ class Configuration {
     getTestBedStatements(testBed) {
         return this.useMasterServiceStub ? [this.getMasterServiceInitTemplate(), testBed] : [testBed];
     }
-    getConfiguration(testBed) {
+    getConfiguration(testBed, classInit) {
         const testBedStatements = this.getTestBedStatements(testBed);
-        return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(identifiers_js_1.beforeEach, undefined, [typescript_1.default.createCall(identifiers_js_1.async, undefined, [arrowFunction_js_1.default(testBedStatements)])]));
+        return [beforeEachTemplate_1.default([typescript_1.default.createCall(identifiers_js_1.async, undefined, [arrowFunctionTemplate_js_1.default(testBedStatements)])]), beforeEachTemplate_1.default([arrowFunctionTemplate_js_1.default(classInit)])];
     }
 }
 exports.default = Configuration;

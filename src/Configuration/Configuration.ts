@@ -1,6 +1,7 @@
 import ts, { ExpressionStatement, ObjectLiteralExpression, VariableStatement, ParameterDeclaration, ClassDeclaration, PropertyAssignment, CallExpression, Identifier } from "typescript";
-import getArrowFnTemplate from "../shared/arrowFunction.js";
+import getArrowFnTemplate from "../shared/arrowFunctionTemplate.js";
 import { getStubName } from "../shared/helpers.js";
+import getBeforeEachTemplate from '../shared/beforeEachTemplate';
 import { provide, useClass, masterServiceStub, beforeEach, async, MasterServiceStub, configureTestingModule } from '../shared/identifiers.js';
 
 class Configuration {
@@ -52,9 +53,9 @@ class Configuration {
     return this.useMasterServiceStub ? [this.getMasterServiceInitTemplate(), testBed] : [testBed];
   }
 
-  protected getConfiguration(testBed: ExpressionStatement): ExpressionStatement {
+  protected getConfiguration(testBed: ExpressionStatement, classInit: ExpressionStatement[]): ExpressionStatement[] {
     const testBedStatements = this.getTestBedStatements(testBed);
-    return ts.createExpressionStatement(ts.createCall(beforeEach, undefined, [ts.createCall(async, undefined, [getArrowFnTemplate(testBedStatements)])]));
+    return [getBeforeEachTemplate([ts.createCall(async, undefined, [getArrowFnTemplate(testBedStatements)])]), getBeforeEachTemplate([getArrowFnTemplate(classInit)])];
   }
 }
 

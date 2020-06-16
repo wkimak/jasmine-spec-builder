@@ -1,6 +1,6 @@
 import ts, { Statement, ArrowFunction } from "typescript";
 
-function getArrowFnTemplate(statements: Statement[] = []): ArrowFunction {
+function getArrowFnTemplate(statements: any = []): ArrowFunction {
   return ts.createArrowFunction(
       undefined,
       undefined,

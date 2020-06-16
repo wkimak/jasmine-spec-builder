@@ -1,6 +1,7 @@
 import ConfigBuilder from "./Configuration";
-import ts, { Identifier, PropertyAssignment, ObjectLiteralExpression, CallExpression, ExpressionStatement, ParameterDeclaration, ClassDeclaration } from "typescript";
-import { declarations, testBed, providers, compileComponents } from "../shared/identifiers";
+import ts, { Identifier, PropertyAssignment, ObjectLiteralExpression, CallExpression, ExpressionStatement, ParameterDeclaration, ClassDeclaration, VariableDeclarationList } from "typescript";
+import { declarations, testBed, providers, compileComponents, component, createComponent, fixture, componentInstance, async } from "../shared/identifiers";
+import getArrowFnTemplate from "../shared/arrowFunctionTemplate";
 
 class ComponentConfiguration extends ConfigBuilder {
   constructor(classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
@@ -16,6 +17,19 @@ class ComponentConfiguration extends ConfigBuilder {
     return ts.createPropertyAssignment(declarations, ts.createArrayLiteral([className]));
   }
 
+  private getComponentFixtureTemplate(): ExpressionStatement[] {
+
+    return [
+      ts.createExpressionStatement(
+        ts.createBinary(fixture, ts.SyntaxKind.EqualsToken, ts.createPropertyAccess(testBed, <any>ts.createCall(createComponent, undefined,
+          [ts.createIdentifier(this.classNode.name.text)])))),
+
+      ts.createExpressionStatement(
+        ts.createBinary(component, ts.SyntaxKind.EqualsToken, ts.createPropertyAccess(testBed, componentInstance)
+        ))
+    ];
+  }
+
   public getProvidersTemplate(): PropertyAssignment {
     const providersArray: ObjectLiteralExpression[] = this.generateStubs();
     return ts.createPropertyAssignment(providers, ts.createArrayLiteral(
@@ -23,9 +37,9 @@ class ComponentConfiguration extends ConfigBuilder {
     ));
   }
 
-  public getConfigurationTemplate(): ExpressionStatement {
+  public getConfigurationTemplate(): ExpressionStatement[] {
     const testingModule = this.getTestingModuleTemplate([this.getDeclarationsTemplate(), this.getProvidersTemplate()]);
-    return this.getConfiguration(this.getTestBedTemplate(testingModule));
+    return this.getConfiguration(this.getTestBedTemplate(testingModule), this.getComponentFixtureTemplate());
   }
 }
 

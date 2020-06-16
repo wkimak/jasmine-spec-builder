@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const typescript_1 = __importDefault(require("typescript"));
-const arrowFunction_1 = __importDefault(require("../shared/arrowFunction"));
+const arrowFunctionTemplate_1 = __importDefault(require("../shared/arrowFunctionTemplate"));
 const identifiers_1 = require("../shared/identifiers");
 function getDescribeTemplate(name) {
-    return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(identifiers_1.describe, undefined, [typescript_1.default.createStringLiteral(name), arrowFunction_1.default()]));
+    return typescript_1.default.createExpressionStatement(typescript_1.default.createCall(identifiers_1.describe, undefined, [typescript_1.default.createStringLiteral(name), arrowFunctionTemplate_1.default()]));
 }
 function getDescribesTemplate(sourceFile, configuration, describeBody = { statements: [] }) {
     typescript_1.default.forEachChild(sourceFile, childNode => {
@@ -17,7 +17,8 @@ function getDescribesTemplate(sourceFile, configuration, describeBody = { statem
         }
         if (typescript_1.default.isClassDeclaration(childNode)) {
             const body = describeBody.statements[0].expression.arguments[1].body;
-            body.statements = typescript_1.default.createNodeArray([configuration]);
+            body.statements = typescript_1.default.createNodeArray(configuration);
+            console.log('STATEMENTS', configuration[1].expression.arguments[0].body);
             getDescribesTemplate(childNode, configuration, body);
         }
     });

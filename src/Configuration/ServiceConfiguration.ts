@@ -1,6 +1,8 @@
 import ConfigBuilder from "./Configuration";
-import ts, { PropertyAssignment, Identifier, CallExpression, ExpressionStatement, ObjectLiteralExpression, ClassDeclaration, ParameterDeclaration } from "typescript";
-import { testBed, providers } from "../shared/identifiers";
+import ts, { PropertyAssignment, Identifier, CallExpression, ExpressionStatement, ObjectLiteralExpression, ClassDeclaration, ParameterDeclaration, VariableDeclaration } from "typescript";
+import { testBed, providers, service, get } from "../shared/identifiers";
+import getBeforeEachTemplate from "../shared/beforeEachTemplate";
+import getArrowFnTemplate from "../shared/arrowFunctionTemplate";
 
 class ServiceConfiguration extends ConfigBuilder {
   constructor(classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
@@ -19,9 +21,20 @@ class ServiceConfiguration extends ConfigBuilder {
     ));
   }
 
-  public getConfigurationTemplate(): ExpressionStatement {
+  private getServiceInitInitTemplate(): ExpressionStatement[] {
+    return [
+      ts.createExpressionStatement(
+        ts.createBinary(service, ts.SyntaxKind.EqualsToken,
+          ts.createPropertyAccess(testBed, <any>ts.createCall(get, undefined,
+            [ts.createIdentifier(this.classNode.name.text)]))
+        )
+      )
+    ]
+  }
+
+  public getConfigurationTemplate(): ExpressionStatement[] {
     const testingModule = this.getTestingModuleTemplate([this.getProvidersTemplate()]);
-    return this.getConfiguration(this.getTestBedTemplate(testingModule));
+    return this.getConfiguration(this.getTestBedTemplate(testingModule), this.getServiceInitInitTemplate());
   }
 }
 

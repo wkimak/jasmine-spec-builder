@@ -15,7 +15,7 @@ class SpecFileCreate extends SpecFileBuilder {
   public build(): SourceFile {
     const dependencyObj = getDependancyObj(this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
     const imports = getImportsTemplate(dependencyObj);
-    const configuration: ExpressionStatement = isComponentFile.test(this.sourceFile.fileName) ?
+    const configuration: ExpressionStatement[] = isComponentFile.test(this.sourceFile.fileName) ?
       new ComponentConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate() :
       new ServiceConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate();
     const describes = getDescribesTemplate(this.sourceFile, configuration);
