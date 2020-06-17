@@ -4,16 +4,16 @@ A command line tool to build and update jasmine spec files.
 You can generate a spec file from scratch or update an existing file's providers. Also, you have the option to utilize a MasterServiceStub to initialize service stubs before each unit test (please refer to Using Master Option below).
 
 # Getting Started
-  ## Prerequisites
-     Typescript version 2.1.4 or above must be installed globally. To install, run:
-     ```
-     npm install -g typescript
-     ```
-  ## Installing
-     This package must be installed globally. To install, run:
-     ```
-     npm install -g jasmine-spec-builder
-     ```
+## Prerequisites
+Typescript version 2.1.4 or above must be installed globally. To install, run:
+```
+npm install -g typescript
+```
+## Installing
+This package must be installed globally. To install, run:
+```
+npm install -g jasmine-spec-builder
+```
 
 # Usage
    ## Building
