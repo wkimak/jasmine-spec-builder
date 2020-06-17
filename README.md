@@ -17,7 +17,7 @@ npm install -g jasmine-spec-builder
 
 # Usage
 ## Building
-To build a non-existing spec file, run:
+To build a nonexistent spec file, run:
 ```
 jsb build -f app.component.ts
 ```
@@ -37,7 +37,7 @@ For instance, if a new dependency was added to the source file's constructor, th
 ## Using Master Option
 Using a MasterServiceStub can be a good approach to organize service stubs into a central class and to ensure new instances of every stub are created before each unit test.
 
-To build a non-existing spec file using the master option, run:
+To build a nonexistent spec file using the master option, run:
 ```
 jsb build -f app.service.ts -m
 ```
@@ -46,8 +46,6 @@ To update an existing spec file using the master option, run:
 ```
 jsb update -f app.service.ts -m
 ```
-
-** SHOW CODE SNIPPETS DISPLAYING HOW MASTERSERVICESTUBS WORK **
 
 ## Naming Conventions
 Each stub name must be the dependency's name with a suffix of 'Stub'. 
@@ -61,24 +59,17 @@ RouterStub --> RouterStub.ts
 ```
 
 If you use the master option, you must have a class named 'MasterServiceStub' that is located in MasterServiceStub.ts. Each property name on MasterServiceStub must be camelCase and match the name of its stub.
-```
+```javascript
 class MasterServiceStub {
-activatedRouteStub = new ActivedRoutedStub();
-appServiceStub = new AppServiceStub();
-routerStub = new RouterStub();
+  activatedRouteStub = new ActivedRoutedStub();
+  appServiceStub = new AppServiceStub();
+  routerStub = new RouterStub();
 }
 ```
 
 ## Preview
-
-** PICTURE OF BUILDING APP.COMPONENT.SPEC.TS **
-
-** PICTURE OF UPDATING APP.COMPONENT.SPEC.TS **
-
-** PICTURE OF BUILDING APP.SERVICE.SPEC.TS WITH MASTER **
+![build](./assets/jsb-build.png?raw=true "Generating app.component.spec.ts")
+![update with master](./assets/jsb-update.png?raw=true "Updating app.component.spec.ts with Additional Dependency (AppService) and Master Option")
 
 # Authors
 William Kimak
-
-# License
-ISC
