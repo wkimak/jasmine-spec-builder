@@ -68,10 +68,10 @@ class MasterServiceStub {
 ```
 
 ## Preview
-Generating app.component.spec.ts:
+*Generating app.component.spec.ts*
 ![build](./assets/jsb-build.png?raw=true)
 
-Updating app.component.spec.ts with additional dependency (AppService) and master option:
+*Updating app.component.spec.ts with additional dependency (AppService) and master option*
 ![update with master](./assets/jsb-update.png?raw=true)
 
 # Authors
