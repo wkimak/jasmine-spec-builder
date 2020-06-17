@@ -6,7 +6,7 @@ You can generate a spec file from scratch or update an existing file's providers
 # Getting Started
   ## Prerequisites
      Typescript version 2.1.4 or above must be installed globally. To install, run:
-     ```
+     ```javascript
      npm install -g typescript
      ```
   ## Installing
