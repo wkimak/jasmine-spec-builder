@@ -40,7 +40,7 @@ function getStubPathAndExport(targetFileName: string, stubName: string, currentD
       return { [relativePath]: { default: stubName } };
     }
   } else {
-    console.log(`${targetFileName} file was not found. All stub file names should be the provider’s name with a suffix of ’Stub.ts’. For instance, the Router provider’s stub file name would be ‘RouterStub.ts’. `)
+    console.log(`${targetFileName} file was not found. If you intended to use stub, your stub's file name must be the provider’s name with a suffix of ’Stub.ts’ (i.e. Router --> RouterStub.ts).`)
   }
 }
 

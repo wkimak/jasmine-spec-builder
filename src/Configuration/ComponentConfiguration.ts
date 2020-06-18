@@ -1,10 +1,11 @@
 import ConfigBuilder from "./Configuration";
 import ts, { Identifier, PropertyAssignment, ObjectLiteralExpression, CallExpression, ExpressionStatement, ParameterDeclaration, ClassDeclaration, VariableDeclarationList, VariableStatement } from "typescript";
 import { declarations, testBed, providers, compileComponents, component, createComponent, fixture, componentInstance, async, componentFixture } from "../shared/identifiers";
+import { DependencyObj } from "../dependencies/DependencyObj.model";
 
 class ComponentConfiguration extends ConfigBuilder {
-  constructor(classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
-    super(classNode, constructorParams, useMasterServiceStub);
+  constructor(dependencyObj: DependencyObj, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
+    super(dependencyObj, classNode, constructorParams, useMasterServiceStub);
   }
 
   private getTestBedTemplate(testingModule: CallExpression): ExpressionStatement {
@@ -38,7 +39,7 @@ class ComponentConfiguration extends ConfigBuilder {
   }
 
   public getProvidersTemplate(): PropertyAssignment {
-    const providersArray: ObjectLiteralExpression[] = this.generateStubs();
+    const providersArray: (ObjectLiteralExpression | Identifier)[] = this.generateStubs();
     return ts.createPropertyAssignment(providers, ts.createArrayLiteral(
       providersArray
     ));

@@ -9,7 +9,8 @@ const helpers_js_1 = require("../shared/helpers.js");
 const beforeEachTemplate_1 = __importDefault(require("../shared/beforeEachTemplate"));
 const identifiers_js_1 = require("../shared/identifiers.js");
 class Configuration {
-    constructor(classNode, constructorParams, useMasterServiceStub) {
+    constructor(dependencyObj, classNode, constructorParams, useMasterServiceStub) {
+        this.dependencyObj = dependencyObj;
         this.classNode = classNode;
         this.constructorParams = constructorParams;
         this.useMasterServiceStub = useMasterServiceStub;
@@ -21,10 +22,16 @@ class Configuration {
             if (typeName) {
                 const providerName = typeName.text;
                 let stubName = helpers_js_1.getStubName(providerName);
-                if (this.useMasterServiceStub) {
-                    stubName = helpers_js_1.getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
+                const dependencyNames = Object.values(this.dependencyObj).reduce(((r, c) => Object.assign(r, c)), {});
+                if (dependencyNames[stubName]) {
+                    if (this.useMasterServiceStub) {
+                        stubName = helpers_js_1.getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
+                    }
+                    stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
                 }
-                stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
+                else {
+                    stubTemplates.push(typescript_1.default.createIdentifier(providerName));
+                }
             }
         });
         return stubTemplates;

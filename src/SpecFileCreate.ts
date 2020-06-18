@@ -15,8 +15,8 @@ class SpecFileCreate extends SpecFileBuilder {
     const dependencyObj = getDependancyObj(this.isComponent, this.sourceFile, this.classNode, this.constructorParams, this.useMasterServiceStub);
     const imports = getImportsTemplate(dependencyObj);
     const configuration: any[] = this.isComponent ?
-      new ComponentConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate() :
-      new ServiceConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate();
+      new ComponentConfiguration(dependencyObj, this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate() :
+      new ServiceConfiguration(dependencyObj, this.classNode, this.constructorParams, this.useMasterServiceStub).getConfigurationTemplate();
     const describes = getDescribesTemplate(this.sourceFile, configuration);
 
     this.targetFile.statements = ts.createNodeArray([...imports, ...describes]);

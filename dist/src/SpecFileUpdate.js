@@ -68,8 +68,8 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
         const callback = (node) => {
             if (this.isProvidersArray(node)) {
                 return regex_1.isComponentFile.test(this.sourceFile.fileName) ?
-                    new ComponentConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate() :
-                    new ServiceConfiguration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate();
+                    new ComponentConfiguration_1.default(this.dependencyObj, this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate() :
+                    new ServiceConfiguration_1.default(this.dependencyObj, this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate();
             }
         };
         return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));
@@ -83,7 +83,7 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
             }
             if (typescript_1.default.isExpressionStatement(node) && node.getFirstToken(this.targetFile).escapedText === 'TestBed') {
                 const updatedProviders = typescript_1.default.transform(node, [this.updateProviders.bind(this)]).transformed[0];
-                return new Configuration_1.default(this.classNode, this.constructorParams, this.useMasterServiceStub).getTestBedStatements(updatedProviders);
+                return new Configuration_1.default(this.dependencyObj, this.classNode, this.constructorParams, this.useMasterServiceStub).getTestBedStatements(updatedProviders);
             }
         };
         return (rootNode) => typescript_1.default.visitNode(rootNode, this.visit(ctx, callback));

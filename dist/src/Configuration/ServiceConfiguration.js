@@ -7,8 +7,8 @@ const Configuration_1 = __importDefault(require("./Configuration"));
 const typescript_1 = __importDefault(require("typescript"));
 const identifiers_1 = require("../shared/identifiers");
 class ServiceConfiguration extends Configuration_1.default {
-    constructor(classNode, constructorParams, useMasterServiceStub) {
-        super(classNode, constructorParams, useMasterServiceStub);
+    constructor(dependencyObj, classNode, constructorParams, useMasterServiceStub) {
+        super(dependencyObj, classNode, constructorParams, useMasterServiceStub);
     }
     getTestBedTemplate(testingModule) {
         return typescript_1.default.createExpressionStatement(typescript_1.default.createPropertyAccess(identifiers_1.testBed, testingModule));

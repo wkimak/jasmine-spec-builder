@@ -73,8 +73,8 @@ class SpecFileUpdate extends SpecFileBuilder {
     const callback = (node) => {
       if (this.isProvidersArray(node)) {
         return isComponentFile.test(this.sourceFile.fileName) ?
-          new ComponentConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate() :
-          new ServiceConfiguration(this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate();
+          new ComponentConfiguration(this.dependencyObj, this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate() :
+          new ServiceConfiguration(this.dependencyObj, this.classNode, this.constructorParams, this.useMasterServiceStub).getProvidersTemplate();
       }
     }
     return (rootNode: ts.SourceFile) => ts.visitNode(rootNode, this.visit(ctx, callback))
@@ -90,7 +90,7 @@ class SpecFileUpdate extends SpecFileBuilder {
 
       if (ts.isExpressionStatement(node) && (<any>node.getFirstToken(this.targetFile)).escapedText === 'TestBed') {
         const updatedProviders = ts.transform(node, [this.updateProviders.bind(this)]).transformed[0];
-        return new Configuration(this.classNode, this.constructorParams, this.useMasterServiceStub).getTestBedStatements(updatedProviders);
+        return new Configuration(this.dependencyObj, this.classNode, this.constructorParams, this.useMasterServiceStub).getTestBedStatements(updatedProviders);
       }
     }
     return (rootNode: ts.SourceFile) => ts.visitNode(rootNode, this.visit(ctx, callback))

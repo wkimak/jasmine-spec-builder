@@ -3,31 +3,40 @@ import getArrowFnTemplate from "../shared/arrowFunctionTemplate.js";
 import { getStubName } from "../shared/helpers.js";
 import getBeforeEachTemplate from '../shared/beforeEachTemplate';
 import { provide, useClass, masterServiceStub, async, MasterServiceStub, configureTestingModule } from '../shared/identifiers.js';
+import { DependencyObj } from "../dependencies/DependencyObj.model.js";
 
 class Configuration {
+  dependencyObj: DependencyObj;
   constructorParams: ts.NodeArray<ParameterDeclaration>;
   useMasterServiceStub: boolean;
   classNode: ClassDeclaration;
 
-  constructor(classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
+  constructor(dependencyObj: DependencyObj, classNode: ClassDeclaration, constructorParams: ts.NodeArray<ParameterDeclaration>, useMasterServiceStub: boolean) {
+    this.dependencyObj = dependencyObj;
     this.classNode = classNode;
     this.constructorParams = constructorParams;
     this.useMasterServiceStub = useMasterServiceStub;
   }
 
-  protected generateStubs(): ObjectLiteralExpression[] {
-    const stubTemplates: ObjectLiteralExpression[] = [];
+  protected generateStubs(): (ObjectLiteralExpression | Identifier)[] {
+    const stubTemplates: (ObjectLiteralExpression | Identifier)[] = [];
     this.constructorParams.forEach((param: any) => {
       const typeName: Identifier = param.type.typeName;
       if (typeName) {
         const providerName: string = typeName.text;
         let stubName = getStubName(providerName);
 
-        if (this.useMasterServiceStub) {
-          stubName = getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
-        }
 
-        stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
+        const dependencyNames = Object.values(this.dependencyObj).reduce(((r, c) => Object.assign(r, c)), {});
+        if (dependencyNames[stubName]) {
+          if (this.useMasterServiceStub) {
+            stubName = getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
+          }
+
+          stubTemplates.push(this.getProviderStubTemplate(providerName, stubName));
+        } else {
+          stubTemplates.push(ts.createIdentifier(providerName));
+        }
       }
     });
     return stubTemplates;
