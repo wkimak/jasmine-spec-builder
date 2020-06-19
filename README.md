@@ -48,7 +48,7 @@ jsb update -f app.service.ts -m
 ```
 
 ## Naming Conventions
-The source file must have an extension of '.component.ts', '.service.ts', or 'resource.ts'.
+The source file must have an extension of '.component.ts', '.service.ts', or '.resource.ts'.
 
 Each stub name must be the dependency's name with a suffix of 'Stub'. 
 ```
@@ -63,7 +63,7 @@ RouterStub --> RouterStub.ts
 If you use the master option, you must have a class named 'MasterServiceStub' that is located in MasterServiceStub.ts. Each property name on MasterServiceStub must be camelCase and match the name of its stub.
 ```javascript
 class MasterServiceStub {
-  activatedRouteStub = new ActivedRoutedStub();
+  activatedRouteStub = new ActivedRouteStub();
   appServiceStub = new AppServiceStub();
   routerStub = new RouterStub();
 }
