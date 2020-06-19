@@ -48,6 +48,8 @@ jsb update -f app.service.ts -m
 ```
 
 ## Naming Conventions
+The source file must have an extension of '.component.ts', '.service.ts', or 'resource.ts'.
+
 Each stub name must be the dependency's name with a suffix of 'Stub'. 
 ```
 Router --> RouterStub
