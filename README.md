@@ -53,7 +53,7 @@ Each stub name must be the dependency's name with a suffix of 'Stub'.
 Router --> RouterStub
 ```
 
-Each stub's file name must be the stub's name with a .ts extension. 
+Each stub's file name must be the stub's name with a .ts extension. If no stub file is found, the dependency will be added to the providers array without its stub.
 ```
 RouterStub --> RouterStub.ts
 ```

@@ -1,6 +1,6 @@
 import getProviderDependencies from './providerDependencies';
 import getStubPathAndExport, { findRootDirectory } from './stubDependencies';
-import { DependencyObj, PathForImport, DependencyNameForProviders } from './DependencyObj.model';
+import { DependencyObj, PathForImports, DependencyNameForProviders } from './DependencyObj.model';
 import { getStubFileName, getStubName } from '../shared/helpers';
 import ts, { ClassDeclaration, SourceFile, ParameterDeclaration, Identifier } from 'typescript';
 
@@ -9,7 +9,7 @@ let dependencyObj: DependencyObj = {
   dependencyNamesForProviders: {}
 };
 
-function addDependencyPathForImports(obj: PathForImport): void {
+function addDependencyPathForImports(obj: PathForImports): void {
   dependencyObj.pathsForImports = { ...dependencyObj.pathsForImports, ...obj };
 }
 
@@ -20,7 +20,7 @@ function addDependencyForProviders(obj: DependencyNameForProviders): void {
 function getDependency(fileName: string, stubName: string, addToImports: boolean): void {
   const currentDirectory: string = process.cwd();
   const projectRootDirectory = findRootDirectory(currentDirectory);
-  const obj: PathForImport = getStubPathAndExport(fileName, stubName, currentDirectory, projectRootDirectory);
+  const obj: PathForImports = getStubPathAndExport(fileName, stubName, currentDirectory, projectRootDirectory);
   if (obj) {
     if (addToImports) {
       addDependencyPathForImports(obj);

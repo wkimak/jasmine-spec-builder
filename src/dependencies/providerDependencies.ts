@@ -1,9 +1,9 @@
-import ts, { NamedImportBindings, ImportSpecifier, ParameterDeclaration, SourceFile, Identifier, ImportClause, ImportDeclaration } from "typescript";
-import { DependencyObj, PathForImport } from "./DependencyObj.model";
+import ts, { NamedImportBindings, ImportSpecifier, ParameterDeclaration, SourceFile, Identifier, ImportClause } from "typescript";
+import { PathForImports } from "./DependencyObj.model";
 
-let providerObj: PathForImport;
+let providerObj: PathForImports;
 
-function getProviderDependencies(constructorParams: ts.NodeArray<ParameterDeclaration>, sourceFile: SourceFile): PathForImport {
+function getProviderDependencies(constructorParams: ts.NodeArray<ParameterDeclaration>, sourceFile: SourceFile): PathForImports {
   providerObj = {};
   constructorParams.forEach((param: any) => {
     const typeName: Identifier = param.type.typeName;

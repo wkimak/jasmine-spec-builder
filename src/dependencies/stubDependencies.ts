@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { isExportDefault } from '../shared/regex';
-import { DependencyObj, PathForImport } from './DependencyObj.model';
+import { PathForImports } from './DependencyObj.model';
 import { removePathExtension } from '../shared/helpers';
 
 const excludedDirectories = {
@@ -22,7 +22,7 @@ function findRootDirectory(currentDirectory: string): string {
   return findRootDirectory(path.dirname(currentDirectory));
 }
 
-function getStubPathAndExport(targetFileName: string, stubName: string, currentDirectory: string, projectRootDirectory: string): PathForImport {
+function getStubPathAndExport(targetFileName: string, stubName: string, currentDirectory: string, projectRootDirectory: string): PathForImports {
   const dependencyPath: string = searchFileSystem(targetFileName, projectRootDirectory);
   if (dependencyPath) {
     const content = fs.readFileSync(dependencyPath, 'utf8');
