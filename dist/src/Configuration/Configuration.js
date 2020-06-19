@@ -22,8 +22,7 @@ class Configuration {
             if (typeName) {
                 const providerName = typeName.text;
                 let stubName = helpers_js_1.getStubName(providerName);
-                const dependencyNames = Object.values(this.dependencyObj).reduce(((r, c) => Object.assign(r, c)), {});
-                if (dependencyNames[stubName]) {
+                if (this.dependencyObj.dependencyNamesForProviders[stubName]) {
                     if (this.useMasterServiceStub) {
                         stubName = helpers_js_1.getStubName(`masterServiceStub.${providerName.slice(0, 1).toLowerCase() + providerName.slice(1)}`);
                     }

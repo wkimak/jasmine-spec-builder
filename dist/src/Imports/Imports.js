@@ -30,8 +30,8 @@ function getImportClause(defaultImport, nonDefaultImports) {
 }
 function getImportsTemplate(dependencyObj) {
     const result = [];
-    for (const path in dependencyObj) {
-        result.push(getImportDeclarationTemplate(path, dependencyObj[path]));
+    for (const path in dependencyObj.pathsForImports) {
+        result.push(getImportDeclarationTemplate(path, dependencyObj.pathsForImports[path]));
     }
     return result;
 }

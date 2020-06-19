@@ -28,8 +28,8 @@ function getImportClause(defaultImport: ts.Identifier, nonDefaultImports: Import
 
 function getImportsTemplate(dependencyObj: DependencyObj): ImportDeclaration[] {
   const result: ImportDeclaration[] = [];
-  for (const path in dependencyObj) {
-    result.push(getImportDeclarationTemplate(path, dependencyObj[path]));
+  for (const path in dependencyObj.pathsForImports) {
+    result.push(getImportDeclarationTemplate(path, dependencyObj.pathsForImports[path]));
   }
 
   return result;

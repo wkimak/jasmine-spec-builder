@@ -57,7 +57,7 @@ class SpecFileUpdate extends SpecFileBuilder_1.default {
                 else if (this.recentProviderImportNames.hasOwnProperty(node.importClause.name.text)) {
                     return null;
                 }
-                if (this.dependencyObj.hasOwnProperty(node.moduleSpecifier.text)) {
+                if (this.dependencyObj.pathsForImports.hasOwnProperty(node.moduleSpecifier.text)) {
                     return null;
                 }
             }

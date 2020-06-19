@@ -13,24 +13,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const providerDependencies_1 = __importDefault(require("./providerDependencies"));
 const stubDependencies_1 = __importStar(require("./stubDependencies"));
 const helpers_1 = require("../shared/helpers");
-let dependencyObj = {};
-function addDependency(obj) {
-    dependencyObj = Object.assign(Object.assign({}, dependencyObj), obj);
+let dependencyObj = {
+    pathsForImports: {},
+    dependencyNamesForProviders: {}
+};
+function addDependencyPathForImports(obj) {
+    dependencyObj.pathsForImports = Object.assign(Object.assign({}, dependencyObj.pathsForImports), obj);
 }
-function getDependency(fileName, stubName) {
+function addDependencyForProviders(obj) {
+    dependencyObj.dependencyNamesForProviders = Object.assign(Object.assign({}, dependencyObj.dependencyNamesForProviders), obj);
+}
+function getDependency(fileName, stubName, addToImports) {
     const currentDirectory = process.cwd();
     const projectRootDirectory = stubDependencies_1.findRootDirectory(currentDirectory);
     const obj = stubDependencies_1.default(fileName, stubName, currentDirectory, projectRootDirectory);
     if (obj) {
-        addDependency(obj);
+        if (addToImports) {
+            addDependencyPathForImports(obj);
+        }
+        addDependencyForProviders({ [stubName]: true });
     }
 }
 ;
 function setTestingPathDependencies(isComponent) {
     const path = '@angular/core/testing';
-    dependencyObj[path] = { TestBed: 'TestBed', async: 'async' };
+    dependencyObj.pathsForImports[path] = { TestBed: 'TestBed', async: 'async' };
     if (isComponent) {
-        dependencyObj[path] = Object.assign(Object.assign({}, dependencyObj[path]), { ComponentFixture: 'ComponentFixture' });
+        dependencyObj.pathsForImports[path] = Object.assign(Object.assign({}, dependencyObj.pathsForImports[path]), { ComponentFixture: 'ComponentFixture' });
     }
 }
 function getDependancyObj(isComponent, sourceFile, classNode, constructorParams, useMasterServiceStub) {
@@ -38,19 +47,17 @@ function getDependancyObj(isComponent, sourceFile, classNode, constructorParams,
     let provider;
     if (useMasterServiceStub) {
         provider = 'MasterService';
-        getDependency(helpers_1.getStubFileName(provider), helpers_1.getStubName(provider));
+        getDependency(helpers_1.getStubFileName(provider), helpers_1.getStubName(provider), true);
     }
-    else {
-        constructorParams.forEach((param) => {
-            const typeName = param.type.typeName;
-            if (typeName) {
-                const provider = typeName.text;
-                getDependency(helpers_1.getStubFileName(provider), helpers_1.getStubName(provider));
-            }
-        });
-    }
-    getDependency(sourceFile.fileName, classNode.name.text);
-    addDependency(providerDependencies_1.default(constructorParams, sourceFile));
+    constructorParams.forEach((param) => {
+        const typeName = param.type.typeName;
+        if (typeName) {
+            const provider = typeName.text;
+            getDependency(helpers_1.getStubFileName(provider), helpers_1.getStubName(provider), !useMasterServiceStub);
+        }
+    });
+    getDependency(sourceFile.fileName, classNode.name.text, true);
+    addDependencyPathForImports(providerDependencies_1.default(constructorParams, sourceFile));
     return dependencyObj;
 }
 exports.default = getDependancyObj;

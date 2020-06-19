@@ -3,8 +3,17 @@ interface DependencyNames {
   [name: string]: string
 }
 
-interface DependencyObj {
+interface PathForImport {
   [path: string]: DependencyNames;
 }
 
-export { DependencyNames, DependencyObj }
+interface DependencyNameForProviders {
+  [name: string]: boolean | string;
+}
+
+interface DependencyObj {
+  pathsForImports: PathForImport,
+  dependencyNamesForProviders: DependencyNameForProviders
+}
+
+export { DependencyNames, DependencyObj, PathForImport, DependencyNameForProviders };
