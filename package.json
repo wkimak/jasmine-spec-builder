@@ -1,7 +1,7 @@
 {
   "name": "jasmine-spec-builder",
   "version": "1.0.3",
-  "description": "A command line tool to generate and update jasmine spec files",
+  "description": "A command line tool to build and update jasmine spec files",
   "scripts": {
     "build": "tsc"
   },
@@ -10,7 +10,7 @@
     "url": "git+https://github.com/wkimak/jasmine-spec-builder.git"
   },
   "author": "William Kimak <wkimak94@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "keywords": [
     "jasmine",
     "unit test generator",
