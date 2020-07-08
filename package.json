@@ -1,6 +1,6 @@
 {
   "name": "jasmine-spec-builder",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A command line tool to build and update jasmine spec files",
   "scripts": {
     "build": "tsc"
