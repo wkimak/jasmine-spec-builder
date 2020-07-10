@@ -49,8 +49,7 @@ yargs_1.default.command('build', 'Build a non-existing spec file')
     demandOption: true,
     nargs: 1,
     describe: 'Load specified file',
-    type: 'string',
-    global: true
+    type: 'string'
 })
     .check((argv) => {
     return checkFileOption(argv);
@@ -60,8 +59,7 @@ yargs_1.default.command('build', 'Build a non-existing spec file')
     alias: 'master',
     demandOption: false,
     nargs: 0,
-    describe: 'Configure spec file to use a MasterServiceStub (master class to hold instances of all service stubs). This can be a good approach to ensure new instances of every service stub before each test.',
-    global: true
+    describe: 'Configure spec file to use a MasterServiceStub (master class to hold instances of all service stubs). This can be a good approach to ensure new instances of every service stub before each test.'
 })
     .check((argv) => {
     return checkMasterOption(argv);
